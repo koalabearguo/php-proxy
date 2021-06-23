@@ -1,7 +1,7 @@
 <?php
 
 
-$__version__  = '3.2.0';
+$__version__  = '3.2.1';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
@@ -186,6 +186,11 @@ function post() {
             $curl_opt[CURLOPT_POSTFIELDS] = $body;
             break;
         default:
+            if (!headers_sent()) {
+                header('Content-Type: ' . $__content_type__);
+            } else {
+	        $__content_type__ = 'text/plain';
+	    }
             echo_content("HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', 'Invalid Method: ' . $method,  $url));
             exit(-1);
     }
