@@ -94,8 +94,9 @@ func SignHosts(ca tls.Certificate, hosts []string) (*tls.Certificate, error) {
 	if err != nil {
 		return nil, err
 	}
-	start := time.Unix(0, 0)
-	end, _ := time.Parse("2006-01-02", "2038-01-19")
+	//start := time.Unix(0, 0)
+	start := time.Now()
+	end, _ := time.Parse("2006-01-02", "2031-01-19")
 	serial := hashSortedBigInt(append(hosts, "1"))
 	template := x509.Certificate{
 		SerialNumber:          serial,
