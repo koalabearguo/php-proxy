@@ -8,7 +8,6 @@
 - 代理模式添加支持HTTP OPTIONS请求，chrome浏览器会用OPTIONS方法
 - 修复了curl请求出错时，返回的数据还是加密（简单XOR运算）的小问题
 - 修复了hostsdeny匹配时，返回的数据还是加密（简单XOR运算）的小问题
-- 接收模式支持Transfer-Encoding：chunked
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
