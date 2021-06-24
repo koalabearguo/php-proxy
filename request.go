@@ -16,7 +16,7 @@ type request struct {
 	//POST body buf
 	body_buf *bytes.Buffer
 	//
-	prx *proxy
+	cfg *config
 }
 
 func (req *request) parse_request() {
@@ -27,7 +27,7 @@ func (req *request) parse_request() {
 		real_req = req.http_req
 	}
 	//
-	com := &compress{cfg: req.prx.cfg}
+	com := &compress{cfg: req.cfg}
 	com.level = flate.NoCompression
 	//
 	//process body
@@ -53,7 +53,12 @@ func (req *request) parse_request() {
 	if err != nil {
 		log.Printf("%s", err)
 	}
-	real_req.Header["X-URLFETCH-password"] = []string{req.prx.cfg.password}
+	//
+	real_req.Header.Add("X-URLFETCH-password", req.cfg.password)
+	//
+	real_req.Header.Del("Proxy-Authorization")
+	real_req.Header.Del("Proxy-Connection")
+	//
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
 		if err != nil {

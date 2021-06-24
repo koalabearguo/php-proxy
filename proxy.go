@@ -58,7 +58,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 	if client == nil {
 		return
 	}
-	req_op := &request{prx: prx}
+	req_op := &request{cfg: prx.cfg}
 	//
 	Req, err := http.ReadRequest(bufio.NewReader(client))
 	http_req := Req
@@ -96,7 +96,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 			return
 		}
 		req_op.https_req = Req
-	} else if (!Req.URL.IsAbs()){
+	} else if !Req.URL.IsAbs() {
 		_, err = client.Write([]byte("HTTP/1.1 200 OK\r\n\r\nThis is php-proxy cilent."))
 		client.Close()
 		return
