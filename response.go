@@ -17,7 +17,7 @@ func (res *response) parse_response() {
 	//
 	encrypt := &encrypt{cfg: res.cfg}
 	//
-	if len(res.res.Header["Content-Type"]) != 0 && res.res.Header["Content-Type"][0] == "image/gif" && res.res.StatusCode == http.StatusOK {
+	if res.res.Header.Get("Content-Type") == "image/gif" && res.res.StatusCode == http.StatusOK {
 		encrypt.content_decrypt(res.body_buf, res.res.Body)
 	} else {
 		io.Copy(res.body_buf, res.res.Body)
