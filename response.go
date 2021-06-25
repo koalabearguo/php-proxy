@@ -31,9 +31,10 @@ func (res *response) parse_response() {
 		Res, err := http.ReadResponse(res_buf_rd, nil)
 		if err != nil {
 			log.Println(err)
-		}
-		for k, v := range Res.Header {
-			log.Printf(k + ": " + v[0])
+		} else {
+			for k, v := range Res.Header {
+				log.Printf(k + ": " + v[0])
+			}
 		}
 	}
 	res.res.Body.Close()
