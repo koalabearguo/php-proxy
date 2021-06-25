@@ -25,3 +25,11 @@ func (c *compress) deflate_compress(dst_buf *bytes.Buffer, src_buf io.Reader) {
 	flateWrite.Close()
 	//
 }
+
+func (c *compress) deflate_uncompress(dst_buf *bytes.Buffer, src_buf io.Reader) {
+
+	flateReader := flate.NewReader(src_buf)
+
+	io.Copy(dst_buf, flateReader)
+	flateReader.Close()
+}

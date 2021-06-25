@@ -75,6 +75,7 @@ func (req *request) parse_request() {
 	real_req.Header.Del("Sec-Websocket-Key")
 	real_req.Header.Del("Sec-Websocket-Version")
 	real_req.Header.Del("Sec-Websocket-Extensions")
+	real_req.Header.Del("Sec-WebSocket-Protocol")
 	if real_req.Header.Get("Connection") == "Upgrade" {
 		real_req.Header.Del("Connection")
 	}
