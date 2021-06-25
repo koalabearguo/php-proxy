@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type request struct {
@@ -34,9 +35,19 @@ func (req *request) parse_request() {
 	deflare_body_buf := bytes.NewBuffer(nil)
 	if real_req.ContentLength > 0 && real_req.Header["Content-Encoding"] == nil {
 		com.deflate_compress(deflare_body_buf, real_req.Body)
-		real_req.Header["Content-Encoding"] = []string{"deflate"}
+		real_req.Header.Del("Content-Encoding")
+		real_req.Header.Del("Content-Length")
+		real_req.Header.Add("Content-Encoding", "deflate")
+		real_req.Header.Add("Content-Length", strconv.Itoa(deflare_body_buf.Len()))
 	} else {
 		io.Copy(deflare_body_buf, real_req.Body)
+	}
+	if real_req.Header.Get("Host") == "" {
+		if req.http_req.Method == http.MethodConnect {
+			real_req.Header.Add("Host", req.http_req.URL.Host)
+		} else {
+			real_req.Header.Add("Host", real_req.URL.Host)
+		}
 	}
 	real_req.Body.Close()
 	//process header
@@ -61,6 +72,7 @@ func (req *request) parse_request() {
 	//
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
+		log.Printf(k + ": " + v[0])
 		if err != nil {
 			log.Printf("%s", err)
 		}
