@@ -37,10 +37,7 @@ func (prx *proxy) init_proxy() {
 func (prx *proxy) handleClientConnectRequest(client net.Conn, host string) (tlscon *tls.Conn, err error) {
 	//
 	cer := prx.cfg.signer.SignHost(host)
-	if err != nil {
-		//log.Println(err)
-		return nil, err
-	}
+	//
 	config := &tls.Config{
 		Certificates: []tls.Certificate{*cer},
 		MinVersion:   tls.VersionTLS12,
@@ -82,11 +79,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 		tlscon, err = prx.handleClientConnectRequest(client, hostname)
 		if err != nil {
 			log.Println(err)
-			if tlscon == nil {
-				client.Close()
-			} else {
-				tlscon.Close()
-			}
+			tlscon.Close()
 			return
 		}
 		Req, err = http.ReadRequest(bufio.NewReader(tlscon))
