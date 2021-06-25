@@ -216,14 +216,12 @@ function post() {
     if ($GLOBALS['__content__']) {
         echo_content($GLOBALS['__content__']);
     } else if ($errno) {
+        $content = "";
         if (!headers_sent()) {
             header('Content-Type: ' . $__content_type__);
-        }
-        $content = "";
-        if($errno==CURLE_OPERATION_TIMEOUTED) {
-           $content = "";
-        } else {
-           $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
+            $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
+        } else if($errno==CURLE_OPERATION_TIMEOUTED) {
+            $content = "";
         }
         echo_content($content);
     }
