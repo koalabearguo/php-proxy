@@ -90,7 +90,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 		}
 		req_op.https_req = Req
 	} else if !Req.URL.IsAbs() {
-		_, err = client.Write([]byte("HTTP/1.0 200 OK\r\n\r\nThis is php-proxy cilent."))
+		_, err = client.Write([]byte("HTTP/1.0 200 OK\r\n\r\nThis is php-proxy client."))
 		client.Close()
 		return
 	}
