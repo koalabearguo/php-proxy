@@ -29,7 +29,8 @@ func (req *request) parse_request() {
 	}
 	//
 	com := &compress{cfg: req.cfg}
-	com.level = flate.NoCompression
+	//com.level = flate.NoCompression
+	com.level = flate.BestSpeed
 	//
 	//process body
 	deflare_body_buf := bytes.NewBuffer(nil)
