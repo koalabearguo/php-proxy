@@ -1,7 +1,7 @@
 <?php
 
 
-$__version__  = '3.2.2';
+$__version__  = '3.2.3';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
