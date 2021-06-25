@@ -36,7 +36,6 @@ func (req *request) parse_request() {
 	deflare_body_buf := bytes.NewBuffer(nil)
 	if real_req.ContentLength > 0 && real_req.Header["Content-Encoding"] == nil {
 		com.deflate_compress(deflare_body_buf, real_req.Body)
-		real_req.Header.Del("Content-Encoding")
 		real_req.Header.Del("Content-Length")
 		real_req.Header.Add("Content-Encoding", "deflate")
 		real_req.Header.Add("Content-Length", strconv.Itoa(deflare_body_buf.Len()))
@@ -71,6 +70,15 @@ func (req *request) parse_request() {
 	real_req.Header.Del("Proxy-Authorization")
 	real_req.Header.Del("Proxy-Connection")
 	//
+	//disable websocket upgrade
+	real_req.Header.Del("Upgrade")
+	real_req.Header.Del("Sec-Websocket-Key")
+	real_req.Header.Del("Sec-Websocket-Version")
+	real_req.Header.Del("Sec-Websocket-Extensions")
+	if real_req.Header.Get("Connection") == "Upgrade" {
+		real_req.Header.Del("Connection")
+	}
+
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
 		if req.cfg.debug == true {
