@@ -6,7 +6,7 @@ $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
 //$__content_type__ = 'text/html';
-$__timeout__ = 20;
+$__timeout__ = 5;
 $__content__ = '';
 
 
@@ -218,10 +218,13 @@ function post() {
     } else if ($errno) {
         if (!headers_sent()) {
             header('Content-Type: ' . $__content_type__);
+        }
+        $content = "";
+        if($errno==CURLE_OPERATION_TIMEOUTED) {
+           $content = "";
         } else {
-	    $__content_type__ = 'text/plain';
-	}
-        $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
+           $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
+        }
         echo_content($content);
     }
     curl_close($ch);
