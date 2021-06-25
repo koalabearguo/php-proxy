@@ -73,7 +73,9 @@ func (req *request) parse_request() {
 	//
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
-		log.Printf(k + ": " + v[0])
+		if req.cfg.debug == true {
+			log.Printf(k + ": " + v[0])
+		}
 		if err != nil {
 			log.Printf("%s", err)
 		}

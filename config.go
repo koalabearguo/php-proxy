@@ -75,6 +75,8 @@ type config struct {
 	signer *CaSigner
 	//root ca info
 	Ca tls.Certificate
+	//debug enable
+	debug bool
 }
 
 func (c *config) init_config() {
@@ -83,6 +85,7 @@ func (c *config) init_config() {
 	flag.StringVar(&c.password, "p", "123456", "php server password")
 	flag.StringVar(&c.sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
+	flag.BoolVar(&c.debug, "d", false, "enable debug mode for debug")
 	flag.Parse()
 	//
 	server_url, err := url.Parse(c.fetchserver)
