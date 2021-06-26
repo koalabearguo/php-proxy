@@ -33,7 +33,7 @@ func (res *response) parse_response() {
 			log.Println(err)
 		} else {
 			for k, v := range Res.Header {
-				log.Printf(k + ": " + v[0])
+				log.Print(k + ": " + v[0])
 			}
 		}
 	}

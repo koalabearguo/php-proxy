@@ -59,7 +59,7 @@ func (req *request) parse_request() {
 	} else {
 		req_line = real_req.Method + " " + real_req.URL.String() + " " + real_req.Proto
 	}
-	log.Printf("PHP " + req_line)
+	log.Print("PHP " + req_line)
 	_, err := header_buf.WriteString(req_line + "\r\n")
 	if err != nil {
 		log.Printf("%s", err)
@@ -83,7 +83,7 @@ func (req *request) parse_request() {
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
 		if req.cfg.debug == true {
-			log.Printf(k + ": " + v[0])
+			log.Print(k + ": " + v[0])
 		}
 		if err != nil {
 			log.Printf("%s", err)
