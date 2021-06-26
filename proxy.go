@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 )
 
 type proxy struct {
@@ -13,6 +14,12 @@ type proxy struct {
 	cfg *config
 	//proxy server listener
 	listenter *net.Listener
+	//http.Transport when connect server
+	tr *http.Transport
+	//tls.Config when connect https server
+	tlsconfig *tls.Config
+	//http.Client used to connect server
+	client *http.Client
 }
 
 func (prx *proxy) init_proxy() {
@@ -24,6 +31,9 @@ func (prx *proxy) init_proxy() {
 	}
 
 	log.Println("Listening on " + prx.cfg.listen)
+
+	//connect php server config
+	prx.init_cfg()
 
 	for {
 		client, err := ln.Accept()
@@ -106,12 +116,10 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 	req_op.parse_request()
 	//
 	//connect php server
-	server := &http.Client{}
 	var Res *http.Response
-	Res, err = server.Post(prx.cfg.fetchserver, "application/octet-stream", req_op.body_buf)
+	Res, err = prx.client.Post(prx.cfg.fetchserver, "application/octet-stream", req_op.body_buf)
 	if err != nil {
 		log.Println(err)
-		server.CloseIdleConnections()
 		return
 	}
 	//
@@ -125,7 +133,6 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 	}
 	if err != nil {
 		log.Println(err)
-		server.CloseIdleConnections()
 		return
 	}
 	//
@@ -135,5 +142,31 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 		client.Close()
 	}
 	//
-	server.CloseIdleConnections()
+}
+func (prx *proxy) init_cfg() {
+	//tls config
+	prx.tlsconfig = &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+	if prx.cfg.sni != "" {
+		prx.tlsconfig.ServerName = prx.cfg.sni
+	}
+	//tr http.client default tr + tlsconfig
+	prx.tr = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+		TLSClientConfig:       prx.tlsconfig,
+	}
+	//
+	prx.client = &http.Client{
+		Transport: prx.tr,
+	}
 }
