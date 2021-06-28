@@ -77,6 +77,8 @@ type config struct {
 	Ca tls.Certificate
 	//debug enable
 	debug bool
+	//insecure connect to php server
+	insecure bool
 }
 
 func (c *config) init_config() {
@@ -86,6 +88,7 @@ func (c *config) init_config() {
 	flag.StringVar(&c.sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
 	flag.BoolVar(&c.debug, "d", false, "enable debug mode for debug")
+	flag.BoolVar(&c.insecure, "k", false, "insecure connect to php server(ignore certs verify)")
 	flag.Parse()
 	//
 	server_url, err := url.Parse(c.fetchserver)

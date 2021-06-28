@@ -147,6 +147,7 @@ func (prx *proxy) init_cfg() {
 	//tls config
 	prx.tlsconfig = &tls.Config{
 		MinVersion: tls.VersionTLS12,
+		InsecureSkipVerify: prx.cfg.insecure,
 	}
 	if prx.cfg.sni != "" {
 		prx.tlsconfig.ServerName = prx.cfg.sni
