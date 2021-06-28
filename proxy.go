@@ -30,7 +30,7 @@ func (prx *proxy) init_proxy() {
 		log.Panic(err)
 	}
 
-	log.Println("Listening on " + prx.cfg.listen)
+	log.Println("HTTP Proxy Listening on " + prx.cfg.listen)
 
 	//connect php server config
 	prx.init_cfg()

@@ -81,7 +81,7 @@ type config struct {
 
 func (c *config) init_config() {
 	//
-	flag.StringVar(&c.listen, "l", "127.0.0.1:8081", "Local listen address")
+	flag.StringVar(&c.listen, "l", "127.0.0.1:8081", "Local listen address(HTTP Proxy address)")
 	flag.StringVar(&c.password, "p", "123456", "php server password")
 	flag.StringVar(&c.sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
