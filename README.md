@@ -5,6 +5,7 @@
 
 ### 特性改进
 - 在连接php server时，https模式支持TLS sni的发送，可以用来穿过CDN，尤其是cloudflare
+- 支持自定义TLS SNI的发送
 - 代理模式添加支持HTTP OPTIONS请求，chrome浏览器会用OPTIONS方法
 - 修复了curl请求出错时，返回的数据还是加密（简单XOR运算）的小问题
 - 修复了hostsdeny匹配时，返回的数据还是加密（简单XOR运算）的小问题
