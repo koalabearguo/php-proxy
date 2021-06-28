@@ -21,17 +21,17 @@
 - 这个简单的XOR加密是真的不错，虽然不能保证数据安全，但是放到有广告的php免费空间中，乱码中主机商不知道怎么插入广告了。。。具有广告过滤的功能了,哈哈哈
 
 ### 使用
-1.把CA.crt CA证书导入到系统中
-2.把index.php上传到一个(免费的)php空间中，位置名称随意,记下php文件的网络地址(这里最好用一个CDN加速，例如cloudflare，因为免费空间基本速度不快)
-3.在右侧release下载对应平台的可执行文件(这里也可以自己根据go文件生成)
-4.cmd命令窗口/linux终端执行php-proxy -s php文件的网络地址,这时本地127.0.0.1:8081就是一个http proxy
+1. 把CA.crt CA证书导入到系统中
+2. 把index.php上传到一个(免费的)php空间中，位置名称随意,记下php文件的网络地址(这里最好用一个CDN加速，例如cloudflare，因为免费空间基本速度不快)
+3. 在右侧release下载对应平台的可执行文件(这里也可以自己根据go文件生成)
+4. cmd命令窗口/linux终端执行php-proxy -s php文件的网络地址,这时本地127.0.0.1:8081就是一个http proxy
 ```
 php-proxy.exe -s https://xxx.xx/free/index.php -l 127.0.0.1:8080 #windows监听127.0.0.1:8080，
 php-proxy -s https://xxxx.xx/proxy/index.php #php 地址https://xxx.xx/free/index.php,linux默认监听127.0.0.1:8081
 ```
-5.设置浏览器的http proxy地址127.0.0.1:8081
-6.在浏览器中输入你想浏览的网页...
-7.更多使用详情可以执行php-proxy -h获取
+5. 设置浏览器的http proxy地址127.0.0.1:8081
+6. 在浏览器中输入你想浏览的网页...
+7. 更多使用详情可以执行php-proxy -h获取
 ```
   -d    enable debug mode for debug
   -l string
