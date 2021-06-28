@@ -1,7 +1,7 @@
 <?php
 
 
-$__version__  = '3.2.4';
+$__version__  = '3.2.5';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
@@ -216,10 +216,9 @@ function post() {
     if ($GLOBALS['__content__']) {
         echo_content($GLOBALS['__content__']);
     } else if ($errno) {
-        $content = "";
+        $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
         if (!headers_sent()) {
             header('Content-Type: ' . $__content_type__);
-            $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
         } else if($errno==CURLE_OPERATION_TIMEOUTED) {
             $content = "";
         }
