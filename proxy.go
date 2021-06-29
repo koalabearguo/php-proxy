@@ -2,10 +2,14 @@ package main
 
 import (
 	"bufio"
+	//"bytes"
 	"crypto/tls"
+	//"io"
+	"errors"
 	"log"
 	"net"
 	"net/http"
+	"reflect"
 	"time"
 )
 
@@ -146,8 +150,12 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 func (prx *proxy) init_cfg() {
 	//tls config
 	prx.tlsconfig = &tls.Config{
-		MinVersion: tls.VersionTLS12,
+		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: prx.cfg.insecure,
+		VerifyConnection:   prx.VerifyConnection,
+	}
+	if prx.cfg.insecure == true {
+		prx.tlsconfig.VerifyConnection = nil
 	}
 	if prx.cfg.sni != "" {
 		prx.tlsconfig.ServerName = prx.cfg.sni
@@ -169,5 +177,15 @@ func (prx *proxy) init_cfg() {
 	//
 	prx.client = &http.Client{
 		Transport: prx.tr,
+	}
+}
+func (prx *proxy) VerifyConnection(cs tls.ConnectionState) error {
+	//
+	cert := cs.PeerCertificates[0]
+	if reflect.DeepEqual(*cert, prx.cfg.cert) {
+		return errors.New("This is a middle attack server using Php-Proxy CA")
+	} else {
+		prx.tlsconfig.VerifyConnection = nil
+		return nil
 	}
 }

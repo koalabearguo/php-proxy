@@ -5,12 +5,13 @@
 
 ### 特性改进
 - 在连接php server时，https模式支持TLS sni的发送，可以用来穿过CDN，尤其是cloudflare
-- 支持自定义TLS SNI的发送
+- 支持自定义TLS SNI的发送,可以用来欺骗xxx
 - 代理模式添加支持HTTP OPTIONS请求，chrome浏览器会用OPTIONS方法
 - 修复了curl请求出错时，返回的数据还是加密（简单XOR运算）的小问题
 - 修复了hostsdeny匹配时，返回的数据还是加密（简单XOR运算）的小问题
 - 屏蔽websocket升级请求头的发送
 - 支持HTTP2，server与client保持一个连接，端口复用性能提升
+- 由于CA.crt根证书公钥私钥公开了，这里在检测到以公开根证书作为根的中间人(php server)，就会断开与服务器的通信
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
@@ -47,7 +48,6 @@ php-proxy -s https://xxxx.xx/proxy/index.php #php 地址https://xxx.xx/free/inde
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
-- 防止中间人攻击，对服务器进行认证
 - 初次写golang，软件架构估计设计也不合理，慢慢改进
 
 ### 感谢
