@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"flag"
 	"log"
+	"os"
 	"net/url"
 )
 
@@ -85,6 +86,8 @@ type config struct {
 }
 
 func (c *config) init_config() {
+	//
+	flag.CommandLine.SetOutput(os.Stdout)
 	//
 	flag.StringVar(&c.listen, "l", "127.0.0.1:8081", "Local listen address(HTTP Proxy address)")
 	flag.StringVar(&c.password, "p", "123456", "php server password")
