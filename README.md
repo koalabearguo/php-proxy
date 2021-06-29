@@ -36,6 +36,7 @@ php-proxy -s https://xxxx.xx/proxy/index.php #php 地址https://xxx.xx/free/inde
 7. 更多使用详情可以执行php-proxy -h获取
 ```
   -d    enable debug mode for debug
+  -k    insecure connect to php server(ignore certs verify/middle attack)
   -l string
         Local listen address(HTTP Proxy address) (default "127.0.0.1:8081")
   -p string
