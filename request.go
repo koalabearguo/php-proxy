@@ -69,6 +69,8 @@ func (req *request) parse_request() {
 	//
 	real_req.Header.Del("Proxy-Authorization")
 	real_req.Header.Del("Proxy-Connection")
+	real_req.Header.Del("Via")
+	real_req.Header.Del("X-Forwarded-For")
 	//
 	//disable websocket upgrade
 	real_req.Header.Del("Upgrade")
@@ -76,6 +78,7 @@ func (req *request) parse_request() {
 	real_req.Header.Del("Sec-Websocket-Version")
 	real_req.Header.Del("Sec-Websocket-Extensions")
 	real_req.Header.Del("Sec-WebSocket-Protocol")
+	//
 	if real_req.Header.Get("Connection") == "Upgrade" {
 		real_req.Header.Del("Connection")
 	}
