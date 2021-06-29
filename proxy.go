@@ -5,12 +5,9 @@ import (
 	//"bytes"
 	"crypto/tls"
 	//"io"
-	"errors"
 	"log"
 	"net"
 	"net/http"
-	"reflect"
-	"time"
 )
 
 type proxy struct {
@@ -18,12 +15,8 @@ type proxy struct {
 	cfg *config
 	//proxy server listener
 	listenter *net.Listener
-	//http.Transport when connect server
-	tr *http.Transport
-	//tls.Config when connect https server
-	tlsconfig *tls.Config
-	//http.Client used to connect server
-	client *http.Client
+	//php client
+	client *client
 }
 
 func (prx *proxy) init_proxy() {
@@ -37,7 +30,8 @@ func (prx *proxy) init_proxy() {
 	log.Println("HTTP Proxy Listening on " + prx.cfg.listen)
 
 	//connect php server config
-	prx.init_cfg()
+	prx.client = &client{cfg: prx.cfg}
+	prx.client.init_client()
 
 	for {
 		client, err := ln.Accept()
@@ -146,46 +140,4 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 		client.Close()
 	}
 	//
-}
-func (prx *proxy) init_cfg() {
-	//tls config
-	prx.tlsconfig = &tls.Config{
-		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: prx.cfg.insecure,
-		VerifyConnection:   prx.VerifyConnection,
-	}
-	if prx.cfg.insecure == true {
-		prx.tlsconfig.VerifyConnection = nil
-	}
-	if prx.cfg.sni != "" {
-		prx.tlsconfig.ServerName = prx.cfg.sni
-	}
-	//tr http.client default tr + tlsconfig
-	prx.tr = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		TLSClientConfig:       prx.tlsconfig,
-	}
-	//
-	prx.client = &http.Client{
-		Transport: prx.tr,
-	}
-}
-func (prx *proxy) VerifyConnection(cs tls.ConnectionState) error {
-	//
-	cert := cs.PeerCertificates[0]
-	if reflect.DeepEqual(*cert, prx.cfg.cert) {
-		return errors.New("This is a middle attack server using Php-Proxy CA")
-	} else {
-		prx.tlsconfig.VerifyConnection = nil
-		return nil
-	}
 }
