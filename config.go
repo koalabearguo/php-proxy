@@ -5,8 +5,8 @@ import (
 	"crypto/x509"
 	"flag"
 	"log"
-	"os"
 	"net/url"
+	"os"
 )
 
 //CaCert/CA.crt should be trusted by local OS
