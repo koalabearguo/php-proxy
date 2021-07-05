@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/x509"
 	//"bytes"
 	"crypto/tls"
 	//"io"
@@ -17,6 +18,26 @@ type proxy struct {
 	listenter *net.Listener
 	//php client
 	client *client
+	//ca sign ssl cert for middle intercept
+	signer *CaSigner
+	//ca root cert info for middle attack check
+	cert *x509.Certificate
+}
+
+func (prx *proxy) init_ca() {
+	//
+	prx.signer = NewCaSignerCache(1024)
+	ca, err := tls.X509KeyPair(CaCert, CaKey)
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		prx.signer.Ca = &ca
+	}
+	//parse our own php-proxy ca to get info
+	prx.cert, err = x509.ParseCertificate(ca.Certificate[0])
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (prx *proxy) init_proxy() {
@@ -26,11 +47,15 @@ func (prx *proxy) init_proxy() {
 	if err != nil {
 		log.Panic(err)
 	}
+	//
+	prx.init_ca()
+	//
 
 	log.Println("HTTP Proxy Listening on " + prx.cfg.listen)
 
 	//connect php server config
 	prx.client = &client{cfg: prx.cfg}
+	prx.client.cert = prx.cert
 	prx.client.init_client()
 
 	for {
@@ -44,7 +69,7 @@ func (prx *proxy) init_proxy() {
 
 func (prx *proxy) handleClientConnectRequest(client net.Conn, host string) (tlscon *tls.Conn, err error) {
 	//
-	cer := prx.cfg.signer.SignHost(host)
+	cer := prx.signer.SignHost(host)
 	//
 	config := &tls.Config{
 		Certificates: []tls.Certificate{*cer},

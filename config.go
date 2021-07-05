@@ -1,11 +1,8 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"flag"
 	"log"
-	"net/url"
 	"os"
 )
 
@@ -71,18 +68,10 @@ type config struct {
 	sni string
 	//local listen address
 	listen string
-	//fetchserver info parsed by url.Parse
-	server_url url.URL
-	//ca sign ssl cert for middle intercept
-	signer *CaSigner
-	//root ca info
-	Ca tls.Certificate
 	//debug enable
 	debug bool
 	//insecure connect to php server
 	insecure bool
-	//ca root cert info for middle attack check
-	cert x509.Certificate
 }
 
 func (c *config) init_config() {
@@ -96,29 +85,6 @@ func (c *config) init_config() {
 	flag.BoolVar(&c.debug, "d", false, "enable debug mode for debug")
 	flag.BoolVar(&c.insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
-	//
-	server_url, err := url.Parse(c.fetchserver)
-	if err != nil {
-		log.Fatal(err)
-	}
-	c.server_url = *server_url
-	//
-	c.signer = NewCaSignerCache(1024)
-	ca, err := tls.X509KeyPair(CaCert, CaKey)
-	c.Ca = ca
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		c.signer.Ca = &ca
-	}
-	//parse our own php-proxy ca to get info
-	var cert_ *x509.Certificate
-	cert_, err = x509.ParseCertificate(ca.Certificate[0])
-	if err != nil {
-		log.Fatal(err)
-	} else {
-		c.cert = *cert_
-	}
 	//
 	log.Printf("php Fetch server:%s\n", c.fetchserver)
 }

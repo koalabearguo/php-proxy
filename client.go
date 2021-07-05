@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"io"
 	"net"
@@ -19,6 +20,8 @@ type client struct {
 	tlsconfig *tls.Config
 	//http.Client used to connect server
 	client *http.Client
+	//ca root cert info for middle attack check
+	cert *x509.Certificate
 }
 
 func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
@@ -60,7 +63,7 @@ func (cli *client) init_client() {
 func (cli *client) VerifyConnection(cs tls.ConnectionState) error {
 	//
 	cert := cs.PeerCertificates[0]
-	if reflect.DeepEqual(*cert, cli.cfg.cert) {
+	if reflect.DeepEqual(cert, cli.cert) {
 		return errors.New("This is a middle attack server using Php-Proxy CA")
 	} else {
 		cli.tlsconfig.VerifyConnection = nil
