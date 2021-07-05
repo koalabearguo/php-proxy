@@ -59,6 +59,11 @@ pRYFQzk5UG6yo4V0/oo2UUSDY0UoxX9lVNcJvYVwPcNwKHnX9a9fRrlf3o+c5rrE
 jIxm1tgZheqRxqpv1LwQ4hQ=
 -----END PRIVATE KEY-----`)
 
+//
+const verssion string = "1.1.0"
+
+//
+
 type config struct {
 	//php fetchserver path
 	fetchserver string
@@ -86,5 +91,6 @@ func (c *config) init_config() {
 	flag.BoolVar(&c.insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
 	//
+	log.Printf("Php-Proxy version:v%s\n", verssion)
 	log.Printf("php Fetch server:%s\n", c.fetchserver)
 }
