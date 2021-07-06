@@ -1,0 +1,8 @@
+{
+"fetchserver": "https://a.bc.com/go/index.php",
+"password": "123456",
+"sni": "a.bc.com",
+"listen": "127.0.0.1:8081",
+"debug": false,
+"insecure": false
+}
