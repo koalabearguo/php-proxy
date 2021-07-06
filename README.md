@@ -51,7 +51,19 @@ php-proxy -s https://xxxx.xx/proxy/index.php
   -sni string
         HTTPS sni extension ServerName(default fetchserver hostname)
 ```
+8. v1.0之后的版本（不包括）支持json格式的配置文件(php-proxy.json)，当命令行有参数时，不使用配置文件，并会把命令行的数据写入json配置文件
+如果命令行没有参数,则从配置文件中读取配置信息,如果读取失败，则使用内部的默认参数
+```
+{
+"fetchserver": "https://a.bc.com/go/index.php",
+"password": "123456",
+"sni": "a.bc.com",
+"listen": "127.0.0.1:8081",
+"debug": false,
+"insecure": false
+}
 
+```
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
 - 初次写golang，软件架构估计设计也不合理，慢慢改进
