@@ -60,7 +60,7 @@ jIxm1tgZheqRxqpv1LwQ4hQ=
 -----END PRIVATE KEY-----`)
 
 //
-const verssion string = "1.1.0"
+const version string = "1.1.0"
 
 //
 
@@ -91,6 +91,6 @@ func (c *config) init_config() {
 	flag.BoolVar(&c.insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
 	//
-	log.Printf("Php-Proxy version:v%s\n", verssion)
+	log.Printf("Php-Proxy version:v%s\n", version)
 	log.Printf("php Fetch server:%s\n", c.fetchserver)
 }
