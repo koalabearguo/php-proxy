@@ -14,8 +14,8 @@ func (e *encrypt) content_decrypt(dst_buf *bytes.Buffer, src_buf io.Reader) {
 
 	var key []byte
 	b, _ := ioutil.ReadAll(src_buf)
-	if e.cfg.password != "" {
-		key = []byte(e.cfg.password)
+	if e.cfg.Password != "" {
+		key = []byte(e.cfg.Password)
 	} else {
 		key = []byte{0}
 	}

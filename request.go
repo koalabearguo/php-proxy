@@ -65,7 +65,7 @@ func (req *request) parse_request() {
 		log.Printf("%s", err)
 	}
 	//
-	real_req.Header.Add("X-URLFETCH-password", req.cfg.password)
+	real_req.Header.Add("X-URLFETCH-password", req.cfg.Password)
 	//
 	real_req.Header.Del("Proxy-Authorization")
 	real_req.Header.Del("Proxy-Connection")
@@ -86,7 +86,7 @@ func (req *request) parse_request() {
 
 	for k, v := range real_req.Header {
 		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
-		if req.cfg.debug == true {
+		if req.cfg.Debug == true {
 			log.Print(k + ": " + v[0])
 		}
 		if err != nil {

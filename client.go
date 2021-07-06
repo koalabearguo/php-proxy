@@ -32,14 +32,14 @@ func (cli *client) init_client() {
 	//tls config
 	cli.tlsconfig = &tls.Config{
 		MinVersion:         tls.VersionTLS12,
-		InsecureSkipVerify: cli.cfg.insecure,
+		InsecureSkipVerify: cli.cfg.Insecure,
 		VerifyConnection:   cli.VerifyConnection,
 	}
-	if cli.cfg.insecure == true {
+	if cli.cfg.Insecure == true {
 		cli.tlsconfig.VerifyConnection = nil
 	}
-	if cli.cfg.sni != "" {
-		cli.tlsconfig.ServerName = cli.cfg.sni
+	if cli.cfg.Sni != "" {
+		cli.tlsconfig.ServerName = cli.cfg.Sni
 	}
 	//tr http.client default tr + tlsconfig
 	cli.tr = &http.Transport{

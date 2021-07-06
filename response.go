@@ -25,7 +25,7 @@ func (res *response) parse_response() {
 		io.Copy(res.body_buf, res.res.Body)
 	}
 	//for debug
-	if res.cfg.debug == true {
+	if res.cfg.Debug == true {
 		res_buf := bytes.NewReader(res.body_buf.Bytes())
 		res_buf_rd := bufio.NewReader(res_buf)
 		Res, err := http.ReadResponse(res_buf_rd, nil)

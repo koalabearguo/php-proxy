@@ -42,7 +42,7 @@ func (prx *proxy) init_ca() {
 
 func (prx *proxy) init_proxy() {
 	//
-	ln, err := net.Listen("tcp", prx.cfg.listen)
+	ln, err := net.Listen("tcp", prx.cfg.Listen)
 	prx.listenter = &ln
 	if err != nil {
 		log.Panic(err)
@@ -51,7 +51,7 @@ func (prx *proxy) init_proxy() {
 	prx.init_ca()
 	//
 
-	log.Println("HTTP Proxy Listening on " + prx.cfg.listen)
+	log.Println("HTTP Proxy Listening on " + prx.cfg.Listen)
 
 	//connect php server config
 	prx.client = &client{cfg: prx.cfg}
@@ -140,7 +140,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 	//
 	//connect php server
 	var Res *http.Response
-	Res, err = prx.client.Post(prx.cfg.fetchserver, "application/octet-stream", req_op.body_buf)
+	Res, err = prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
 	if err != nil {
 		log.Println(err)
 		return

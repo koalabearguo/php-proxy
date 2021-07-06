@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"log"
 	"os"
 )
@@ -66,31 +68,74 @@ const version string = "1.1.0"
 
 type config struct {
 	//php fetchserver path
-	fetchserver string
+	Fetchserver string `json:"fetchserver"`
 	//password
-	password string
+	Password string `json:"password"`
 	//when connect https php server,TLS sni extension
-	sni string
+	Sni string `json:"sni"`
 	//local listen address
-	listen string
+	Listen string `json:"listen"`
 	//debug enable
-	debug bool
+	Debug bool `json:"debug"`
 	//insecure connect to php server
-	insecure bool
+	Insecure bool `json:"insecure"`
 }
 
 func (c *config) init_config() {
 	//
+	log.Printf("Php-Proxy version:v%s\n", version)
+	//
 	flag.CommandLine.SetOutput(os.Stdout)
 	//
-	flag.StringVar(&c.listen, "l", "127.0.0.1:8081", "Local listen address(HTTP Proxy address)")
-	flag.StringVar(&c.password, "p", "123456", "php server password")
-	flag.StringVar(&c.sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
-	flag.StringVar(&c.fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
-	flag.BoolVar(&c.debug, "d", false, "enable debug mode for debug")
-	flag.BoolVar(&c.insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
+	flag.StringVar(&c.Listen, "l", "127.0.0.1:8081", "Local listen address(HTTP Proxy address)")
+	flag.StringVar(&c.Password, "p", "123456", "php server password")
+	flag.StringVar(&c.Sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
+	flag.StringVar(&c.Fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
+	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
+	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
+	//c.writeconfig()
+	if len(os.Args) < 2 {
+		c.loadconfig()
+	} else {
+		c.writeconfig()
+	}
 	//
-	log.Printf("Php-Proxy version:v%s\n", version)
-	log.Printf("php Fetch server:%s\n", c.fetchserver)
+	log.Printf("php Fetch server:%s\n", c.Fetchserver)
+}
+
+func (c *config) loadconfig() {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.json")
+	if err1 != nil {
+		//log.Print(err1)
+		return
+	}
+	log.Print("Load config from ./php-proxy.json file")
+	err = json.Unmarshal(raw, c)
+	if err != nil {
+		log.Print(err)
+	}
+}
+func (c *config) writeconfig() {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	raw, err1 := json.MarshalIndent(c, "", "")
+	//raw, err1 := json.Marshal(c)
+	log.Print(string(raw))
+	if err1 != nil {
+		log.Print(err1)
+		return
+	}
+	err = ioutil.WriteFile(dir+"/php-proxy.json", raw, 0644)
+	if err != nil {
+		log.Print(err)
+		return
+	}
+	log.Print("Write config to ./php-proxy.json file")
 }
