@@ -127,7 +127,7 @@ func (c *config) writeconfig() {
 	}
 	raw, err1 := json.MarshalIndent(c, "", "")
 	//raw, err1 := json.Marshal(c)
-	log.Print(string(raw))
+	//log.Print(string(raw))
 	if err1 != nil {
 		log.Print(err1)
 		return
