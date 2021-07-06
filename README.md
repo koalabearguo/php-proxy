@@ -51,7 +51,7 @@ php-proxy -s https://xxxx.xx/proxy/index.php
   -sni string
         HTTPS sni extension ServerName(default fetchserver hostname)
 ```
-8. v1.0之后的版本（不包括）支持json格式的配置文件(php-proxy.json)，当命令行有参数时，不使用配置文件，并会把命令行的数据写入json配置文件
+8. v1.0之后的版本（不包括）支持json格式的配置文件(php-proxy.json)，当命令行有参数时，不使用配置文件，并会把命令行的数据写入json配置文件;
 如果命令行没有参数,则从配置文件中读取配置信息,如果读取失败，则使用内部的默认参数
 ```
 {
