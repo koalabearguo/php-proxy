@@ -49,6 +49,7 @@ func (c *CaSigner) SignHost(host string) (cert *tls.Certificate) {
 	if host == "" {
 		return
 	}
+	host = WildcardHost(host)
 	if c.certMax <= 0 {
 		crt, err := SignHosts(*c.Ca, []string{host})
 		if err != nil {
@@ -108,6 +109,7 @@ func SignHosts(ca tls.Certificate, hosts []string) (*tls.Certificate, error) {
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
+	template.Subject.CommonName = hosts[0]
 	for _, h := range hosts {
 		h = stripPort(h)
 		if ip := net.ParseIP(h); ip != nil {
@@ -154,4 +156,19 @@ func stripPort(s string) string {
 		return s
 	}
 	return s[:ix]
+}
+
+func WildcardHost(host string) string {
+	if ip := net.ParseIP(host); ip != nil {
+		return host
+	} else {
+		domain := strings.Split(host, ".")
+		if len(domain[len(domain)-1]) >= 3 && len(domain) >= 3 {
+			h := strings.Replace(host, domain[0], "*", 1)
+			return h
+		} else {
+			return host
+		}
+	}
+
 }
