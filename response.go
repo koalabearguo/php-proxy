@@ -15,27 +15,40 @@ type response struct {
 }
 
 func (res *response) parse_response() {
+	body_buf_tmp := bytes.NewBuffer(nil)
 	res.body_buf = bytes.NewBuffer(nil)
 	//
 	encrypt := &encrypt{cfg: res.cfg}
 	//
 	if res.res.Header.Get("Content-Type") == "image/gif" && res.res.StatusCode == http.StatusOK {
-		encrypt.content_decrypt(res.body_buf, res.res.Body)
+		encrypt.content_decrypt(body_buf_tmp, res.res.Body)
 	} else {
-		io.Copy(res.body_buf, res.res.Body)
-	}
-	//for debug
-	if res.cfg.Debug == true {
-		res_buf := bytes.NewReader(res.body_buf.Bytes())
-		res_buf_rd := bufio.NewReader(res_buf)
-		Res, err := http.ReadResponse(res_buf_rd, nil)
-		if err != nil {
-			log.Println(err)
-		} else {
-			for k, v := range Res.Header {
-				log.Print(k + ": " + v[0])
-			}
-		}
+		io.Copy(body_buf_tmp, res.res.Body)
 	}
 	res.res.Body.Close()
+	//
+	res_buf_rd := bufio.NewReader(body_buf_tmp)
+	Res, err := http.ReadResponse(res_buf_rd, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	//process header
+	Res.Header.Del("Upgrade")
+	Res.Header.Del("Alt-Svc")
+	Res.Header.Del("Alternate-Protocol")
+	Res.Header.Del("Expect-CT")
+	//
+	res.body_buf.WriteString(Res.Proto + " " + Res.Status + "\r\n")
+	for k, v := range Res.Header {
+		//for debug
+		if res.cfg.Debug {
+			log.Print(k + ": " + v[0])
+		}
+		res.body_buf.WriteString(k + ": " + v[0] + "\r\n")
+	}
+	res.body_buf.WriteString("\r\n")
+	res.body_buf.ReadFrom(Res.Body)
+	Res.Body.Close()
+	//
 }
