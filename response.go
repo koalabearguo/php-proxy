@@ -27,10 +27,12 @@ func (res *response) parse_response() {
 	}
 	res.res.Body.Close()
 	//
+	only_body := body_buf_tmp.Bytes()
 	res_buf_rd := bufio.NewReader(body_buf_tmp)
 	Res, err := http.ReadResponse(res_buf_rd, nil)
 	if err != nil {
 		log.Println(err)
+		res.body_buf.Write(only_body)
 		return
 	}
 	//process header
