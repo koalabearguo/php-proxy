@@ -76,4 +76,4 @@ php-proxy -s https://xxxx.xx/proxy/index.php
 
 ### 感谢
 - GoAgent项目，让我学习了Python，php
-- go-httpproxy/httpproxy项目，SSL中间人拦截模式以及Ca签发是从这里学的
+- [go-httpproxy/httpproxy](https://github.com/go-httpproxy/httpproxy)项目，SSL中间人拦截模式以及Ca签发是从这里学的
