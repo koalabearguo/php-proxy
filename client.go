@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"reflect"
@@ -25,7 +26,25 @@ type client struct {
 }
 
 func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
-	return cli.client.Post(url, contentType, body)
+	req, err := http.NewRequest(http.MethodPost, url, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", contentType)
+	if cli.cfg.Sni != "" {
+		if req.URL.Port() == "" {
+			req.Host = cli.cfg.Sni
+		} else {
+			req.Host = cli.cfg.Sni + ":" + req.URL.Port()
+		}
+	}
+	if cli.cfg.Debug == true {
+		for k, v := range req.Header {
+			log.Print(k + ": " + v[0])
+		}
+	}
+	return cli.client.Do(req)
+	//return cli.client.Post(url, contentType, body)
 }
 
 func (cli *client) init_client() {
