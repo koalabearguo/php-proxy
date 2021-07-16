@@ -2,13 +2,13 @@ package main
 
 import (
 	"bufio"
-	"crypto/x509"
-	//"bytes"
 	"crypto/tls"
-	//"io"
+	"crypto/x509"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
+	"os"
 )
 
 type proxy struct {
@@ -24,10 +24,49 @@ type proxy struct {
 	cert *x509.Certificate
 }
 
+func (prx *proxy) load_ca() []byte {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.crt")
+	if err1 != nil {
+		return nil
+	}
+	//log.Print("Load ca cert from ./php-proxy.crt file")
+	return raw
+}
+
+func (prx *proxy) load_key() []byte {
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.key")
+	if err1 != nil {
+		return nil
+	}
+	//log.Print("Load ca key from ./php-proxy.key file")
+	return raw
+}
+
 func (prx *proxy) init_ca() {
 	//
+	var use_ca, use_key []byte
 	prx.signer = NewCaSignerCache(1024)
-	ca, err := tls.X509KeyPair(CaCert, CaKey)
+	cert := prx.load_ca()
+	key := prx.load_key()
+	if cert != nil && key != nil {
+		use_ca = cert
+		use_key = key
+		log.Print("Using external customize CA file:./php-proxy.crt ./php-proxy.key")
+
+	} else {
+		use_ca = CaCert
+		use_key = CaKey
+		log.Print("Using internal Php-Proxy CA file")
+	}
+	ca, err := tls.X509KeyPair(use_ca, use_key)
 	if err != nil {
 		log.Fatal(err)
 	} else {
