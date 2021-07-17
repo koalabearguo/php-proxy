@@ -71,6 +71,7 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 10. v1.1.3(包括)之后的版本，可以对抗DNS污染(不能对抗IP封锁哈,IP封锁了就要套CDN了)，或者指定DNS解析,比如你的域名helloworld.com被污染了,原先的配置
 (php-proxy.json)可以修改成这样,一定要指定sni，否则大部分情况下是不工作的(除了独立服务器，没有使用virtual host类似功能的)
 ```
+#当然修改系统的hosts文件，也可以完成相似的功能，不过在不是管理员时可能没有权限
 "fetchserver": "https://域名解析正确的IP/go/index.php",
 "sni": "helloworld.com",
 ```
