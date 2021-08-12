@@ -75,7 +75,7 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 "fetchserver": "https://域名解析正确的IP/go/index.php",
 "sni": "helloworld.com",
 ```
-另外隐藏的功能就是，假如你用了cloudflare的cdn，那么它给你域名分配的IP，一般有两个,这两个IP一般不是最优的，可以借助其他工具查找其他的CDN ip,找到性能好的，
+另外隐藏的功能就是，假如你用了cloudflare的cdn，那么它给你域名分配的IP，一般有两个,这两个IP一般不是最优的，可以借助其他工具([better-cloudflare-ip](https://github.com/badafans/better-cloudflare-ip))查找其他的CDN ip,找到性能好的，
 通过这种指定IP的模式，可以更好的使用CDN加速
 另外提一下，如果IP没被封锁，但TLS SNI被盯上了，这个好办，换个域名就好了（好多地方可以免费申请域名）
 
