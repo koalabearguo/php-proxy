@@ -226,9 +226,7 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 			return
 		}
 		//break
-		req_op.body_buf = nil
 		if req_op.http_req.Method == http.MethodConnect {
-			req_op.https_req = nil
 			Req, err = http.ReadRequest(bufio.NewReader(tlscon))
 			if err != nil {
 				log.Println(err)
@@ -237,7 +235,6 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 			req_op.https_req = Req
 			//log.Printf("----------------Re USE HTTP Port--------------")
 		} else {
-			req_op.http_req = nil
 			Req, err = http.ReadRequest(bufio.NewReader(client))
 			if err != nil {
 				log.Println(err)
