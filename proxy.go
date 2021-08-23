@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 )
 
 type proxy struct {
@@ -105,7 +106,21 @@ func (prx *proxy) init_proxy() {
 		go prx.handleClientRequest(client)
 	}
 }
+func test_http_buf(resp *http.Response) {
+	reader := bufio.NewReader(resp.Body)
 
+	var buf [8192]byte
+	for {
+		n, err := reader.Read(buf[:])
+		if err != nil {
+			log.Printf("%d", n)
+			log.Fatal(err)
+		} else {
+			log.Printf("%d", n)
+		}
+	}
+
+}
 func (prx *proxy) handleClientConnectRequest(client net.Conn, host string) (tlscon *tls.Conn, err error) {
 	//
 	cer := prx.signer.SignHost(host)
@@ -168,37 +183,72 @@ func (prx *proxy) handleClientRequest(client net.Conn) {
 	}
 	//
 	defer func() {
-		if http_req.Method == http.MethodConnect {
+		if req_op.http_req.Method == http.MethodConnect {
 			tlscon.Close()
 		} else {
 			client.Close()
 		}
 	}()
-	//parse http request
-	req_op.parse_request()
-	//
-	//connect php server
-	var Res *http.Response
-	Res, err = prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
-	if err != nil {
-		log.Println(err)
-		return
+	for {
+		//parse http request
+		req_op.parse_request()
+		//
+		//connect php server
+		var Res *http.Response
+		start := time.Now()
+		//go test_http_buf(Res)
+		Res, err = prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
+		if prx.cfg.Debug == true {
+			elapsed := time.Since(start)
+			log.Println("HTTP POST Time elapsed:", elapsed)
+		}
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		//
+		proxy_res_data := &response{res: Res, cfg: prx.cfg}
+		proxy_res_data.parse_response()
+		//log.Printf("%q",proxy_res_data.body_buf)
+		var n, lth int
+		lth = proxy_res_data.body_buf.Len()
+		if req_op.http_req.Method == http.MethodConnect {
+			n, err = tlscon.Write(proxy_res_data.body_buf.Bytes())
+		} else {
+			n, err = client.Write(proxy_res_data.body_buf.Bytes())
+		}
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		if n != lth {
+			log.Printf("Send Data Length mismatch.%d/%d", n, lth)
+			return
+		}
+		//break
+		req_op.body_buf = nil
+		if req_op.http_req.Method == http.MethodConnect {
+			req_op.https_req = nil
+			Req, err = http.ReadRequest(bufio.NewReader(tlscon))
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			req_op.https_req = Req
+			//log.Printf("----------------Re USE HTTP Port--------------")
+		} else {
+			req_op.http_req = nil
+			Req, err = http.ReadRequest(bufio.NewReader(client))
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			//
+			req_op.http_req = Req
+		}
 	}
 	//
-	proxy_res_data := &response{res: Res, cfg: prx.cfg}
-	proxy_res_data.parse_response()
-	//log.Printf("%q",proxy_res_data.body_buf)
-	if http_req.Method == http.MethodConnect {
-		_, err = tlscon.Write(proxy_res_data.body_buf.Bytes())
-	} else {
-		_, err = client.Write(proxy_res_data.body_buf.Bytes())
-	}
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	//
-	if http_req.Method == http.MethodConnect {
+	if req_op.http_req.Method == http.MethodConnect {
 		tlscon.Close()
 	} else {
 		client.Close()

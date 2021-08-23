@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type response struct {
@@ -28,6 +29,7 @@ func (res *response) parse_response() {
 	res.res.Body.Close()
 	//
 	only_body := body_buf_tmp.Bytes()
+	//log.Printf("%q", only_body)
 	res_buf_rd := bufio.NewReader(body_buf_tmp)
 	Res, err := http.ReadResponse(res_buf_rd, nil)
 	if err != nil {
@@ -41,6 +43,15 @@ func (res *response) parse_response() {
 	Res.Header.Del("Alternate-Protocol")
 	Res.Header.Del("Expect-CT")
 	//
+	err = nil
+	pure_body := bytes.NewBuffer(nil)
+	n, err := pure_body.ReadFrom(Res.Body)
+	if Res.Header.Get("Content-Length") == "" && Res.ContentLength != -1 {
+		Res.Header.Add("Content-Length", strconv.FormatInt(Res.ContentLength, 10))
+	} else {
+		Res.Header.Set("Content-Length", strconv.FormatInt(n, 10))
+	}
+	//
 	res.body_buf.WriteString(Res.Proto + " " + Res.Status + "\r\n")
 	for k, v := range Res.Header {
 		//for debug
@@ -50,7 +61,8 @@ func (res *response) parse_response() {
 		res.body_buf.WriteString(k + ": " + v[0] + "\r\n")
 	}
 	res.body_buf.WriteString("\r\n")
-	res.body_buf.ReadFrom(Res.Body)
+	//res.body_buf.ReadFrom(Res.Body)
+	res.body_buf.Write(pure_body.Bytes())
 	Res.Body.Close()
 	//
 }
