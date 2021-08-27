@@ -72,6 +72,8 @@ func (req *request) parse_request() {
 	real_req.Header.Del("Via")
 	real_req.Header.Del("X-Forwarded-For")
 	real_req.Header.Del("X-Chrome-Variations")
+	real_req.Header.Del("Cache-Control")
+	real_req.Header.Del("Connection")
 	//
 	//disable websocket upgrade
 	real_req.Header.Del("Upgrade")

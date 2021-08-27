@@ -4,11 +4,14 @@ import (
 	"bufio"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -82,12 +85,6 @@ func (prx *proxy) init_ca() {
 
 func (prx *proxy) init_proxy() {
 	//
-	ln, err := net.Listen("tcp", prx.cfg.Listen)
-	prx.listenter = &ln
-	if err != nil {
-		log.Panic(err)
-	}
-	//
 	prx.init_ca()
 	//
 
@@ -97,15 +94,16 @@ func (prx *proxy) init_proxy() {
 	prx.client = &client{cfg: prx.cfg}
 	prx.client.cert = prx.cert
 	prx.client.init_client()
+	//
+	log.Fatal(http.ListenAndServe(prx.cfg.Listen, prx))
+	//
 
-	for {
-		client, err := ln.Accept()
-		if err != nil {
-			log.Panic(err)
-		}
-		go prx.handleClientRequest(client)
-	}
 }
+
+func (prx *proxy) new_proxy() {
+	//
+}
+
 func test_http_buf(resp *http.Response) {
 	reader := bufio.NewReader(resp.Body)
 
@@ -121,134 +119,140 @@ func test_http_buf(resp *http.Response) {
 	}
 
 }
+
+func (prx *proxy) debug_request(r *http.Request) string {
+	// Create return string
+	var request []string
+	// Add the request string
+	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)
+	request = append(request, url)
+	// Add the host
+	request = append(request, fmt.Sprintf("Host: %v", r.Host))
+	// Loop through headers
+	for name, headers := range r.Header {
+		name = strings.ToLower(name)
+		for _, h := range headers {
+			request = append(request, fmt.Sprintf("%v: %v", name, h))
+		}
+	}
+
+	// If this is a POST, add post data
+	if r.Method == "POST" {
+		r.ParseForm()
+		request = append(request, "\n")
+		request = append(request, r.Form.Encode())
+	}
+	// Return the request as a string
+	return strings.Join(request, "\n")
+}
+func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	req_op := &request{cfg: prx.cfg, http_req: req}
+	var tlscon *tls.Conn
+	//Strip ssl
+	if req.Method == http.MethodConnect {
+		hijacker, ok := rw.(http.Hijacker)
+		if !ok {
+			log.Println(fmt.Errorf("%#v does not implments Hijacker", rw))
+			return
+		}
+		hijacker = hijacker
+		conn, _, err := hijacker.Hijack()
+		if err != nil {
+			log.Println(fmt.Errorf("http.ResponseWriter Hijack failed: %s", err))
+			return
+		}
+
+		_, err = io.WriteString(conn, "HTTP/1.1 200 Connection established\r\n\r\n")
+		if err != nil {
+			conn.Close()
+			log.Println(err)
+			return
+		}
+
+		//handleClientConnectRequest(conn,req.URL.Hostname())
+		tlscon, err = prx.handleClientConnectRequest(conn, req.URL.Hostname())
+		if err != nil {
+			log.Println(err)
+			tlscon.Close()
+			return
+		}
+		req_op.https_req, err = http.ReadRequest(bufio.NewReader(tlscon))
+		if err != nil {
+			log.Println(err)
+			tlscon.Close()
+			return
+		}
+	} else if !req.URL.IsAbs() {
+		_, _ = io.WriteString(rw, "HTTP/1.0 200 OK\r\n\r\nThis is php-proxy client.")
+		return
+	}
+	//parse http request
+	req_op.parse_request()
+	//
+	//connect php server
+	//var Res *http.Response
+	start := time.Now()
+	//go test_http_buf(Res)
+	Res, err := prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
+	if prx.cfg.Debug == true {
+		elapsed := time.Since(start)
+		log.Println("HTTP POST Time elapsed:", elapsed)
+	}
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	//
+	proxy_res_data := &response{res: Res, cfg: prx.cfg}
+	resp := proxy_res_data.parse_response()
+	if resp == nil {
+		return
+	}
+	defer resp.Body.Close()
+	//log.Printf("%q",proxy_res_data.body_buf)
+	var n, lth int
+	lth = proxy_res_data.body_buf.Len()
+	if req_op.http_req.Method == http.MethodConnect {
+		//n, err = tlscon.Write(proxy_res_data.body_buf.Bytes())
+		_, err = tlscon.Write([]byte(Res.Proto + " " + Res.Status + "\r\n"))
+		for key, values := range resp.Header {
+			for _, value := range values {
+				_, err = tlscon.Write([]byte(key + ": " + value + "\r\n"))
+			}
+		}
+		_, err = tlscon.Write([]byte("\r\n"))
+		_, err = io.Copy(tlscon, resp.Body)
+	} else {
+		for key, values := range resp.Header {
+			for _, value := range values {
+				rw.Header().Add(key, value)
+			}
+		}
+		rw.WriteHeader(resp.StatusCode)
+		//n, err = io.Copy(rw, proxy_res_data.body_buf.String())
+		_, err = io.Copy(rw, resp.Body)
+	}
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	n = lth
+	if n != lth {
+		log.Printf("Send Data Length mismatch.%d/%d", n, lth)
+		return
+	}
+}
 func (prx *proxy) handleClientConnectRequest(client net.Conn, host string) (tlscon *tls.Conn, err error) {
 	//
 	cer := prx.signer.SignHost(host)
 	//
 	config := &tls.Config{
 		Certificates: []tls.Certificate{*cer},
-		MinVersion:   tls.VersionTLS12,
 	}
 	tlscon = tls.Server(client, config)
 	err = tlscon.Handshake()
 	if err != nil {
-		//log.Println(err)
 		return tlscon, err
 	}
 	return tlscon, nil
-}
-
-func (prx *proxy) handleClientRequest(client net.Conn) {
-	if client == nil {
-		return
-	}
-	req_op := &request{cfg: prx.cfg}
-	//
-	Req, err := http.ReadRequest(bufio.NewReader(client))
-	http_req := Req
-	if err != nil {
-		log.Println(err)
-		client.Close()
-		return
-	}
-	//
-	req_op.http_req = http_req
-	//STRIP connect method
-	var tlscon *tls.Conn
-	if Req.Method == http.MethodConnect {
-		_, err = client.Write([]byte("HTTP/1.1 200 Connection established\r\n\r\n"))
-		if err != nil {
-			log.Println(err)
-			client.Close()
-			return
-		}
-		hostname := Req.URL.Hostname()
-		tlscon, err = prx.handleClientConnectRequest(client, hostname)
-		if err != nil {
-			log.Println(err)
-			tlscon.Close()
-			return
-		}
-		Req, err = http.ReadRequest(bufio.NewReader(tlscon))
-		if err != nil {
-			log.Println(err)
-			tlscon.Close()
-			return
-		}
-		req_op.https_req = Req
-	} else if !Req.URL.IsAbs() {
-		_, err = client.Write([]byte("HTTP/1.0 200 OK\r\n\r\nThis is php-proxy client."))
-		client.Close()
-		return
-	}
-	//
-	defer func() {
-		if req_op.http_req.Method == http.MethodConnect {
-			tlscon.Close()
-		} else {
-			client.Close()
-		}
-	}()
-	for {
-		//parse http request
-		req_op.parse_request()
-		//
-		//connect php server
-		var Res *http.Response
-		start := time.Now()
-		//go test_http_buf(Res)
-		Res, err = prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
-		if prx.cfg.Debug == true {
-			elapsed := time.Since(start)
-			log.Println("HTTP POST Time elapsed:", elapsed)
-		}
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		//
-		proxy_res_data := &response{res: Res, cfg: prx.cfg}
-		proxy_res_data.parse_response()
-		//log.Printf("%q",proxy_res_data.body_buf)
-		var n, lth int
-		lth = proxy_res_data.body_buf.Len()
-		if req_op.http_req.Method == http.MethodConnect {
-			n, err = tlscon.Write(proxy_res_data.body_buf.Bytes())
-		} else {
-			n, err = client.Write(proxy_res_data.body_buf.Bytes())
-		}
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		if n != lth {
-			log.Printf("Send Data Length mismatch.%d/%d", n, lth)
-			return
-		}
-		//break
-		if req_op.http_req.Method == http.MethodConnect {
-			Req, err = http.ReadRequest(bufio.NewReader(tlscon))
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			req_op.https_req = Req
-			//log.Printf("----------------Re USE HTTP Port--------------")
-		} else {
-			Req, err = http.ReadRequest(bufio.NewReader(client))
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			//
-			req_op.http_req = Req
-		}
-	}
-	//
-	if req_op.http_req.Method == http.MethodConnect {
-		tlscon.Close()
-	} else {
-		client.Close()
-	}
-	//
 }
