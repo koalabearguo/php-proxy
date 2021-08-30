@@ -16,6 +16,8 @@ type response struct {
 	cfg *config
 }
 
+var ResDeleteHeader = []string{"Upgrade", "Alt-Svc", "Alternate-Protocol", "Expect-CT"}
+
 func (res *response) parse_response() *http.Response {
 	//
 	encrypt := &encrypt{cfg: res.cfg}
@@ -42,9 +44,9 @@ func (res *response) parse_response() *http.Response {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 	//
-	resp.Header.Del("Upgrade")
-	resp.Header.Del("Alt-Svc")
-	resp.Header.Del("Alternate-Protocol")
-	resp.Header.Del("Expect-CT")
+	for _, h := range ResDeleteHeader {
+		resp.Header.Del(h)
+	}
+	//
 	return resp
 }

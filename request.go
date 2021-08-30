@@ -59,7 +59,6 @@ func (req *request) Close() (err error) {
 			}
 		}
 	}
-
 	return err
 }
 
@@ -86,6 +85,7 @@ func (req *request) parse_request() {
 	req.http_req.Header.WriteSubset(header_buf, ReqDeleteHeader)
 	//
 	com.deflate_compress(deflare_header_buf, header_buf)
+	//
 	//pack (header length may biger than 65536 bytes)
 	var length [2]byte
 	if deflare_header_buf.Len() < 65536 {
