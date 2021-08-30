@@ -47,10 +47,31 @@ func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Res
 	//return cli.client.Post(url, contentType, body)
 }
 
+func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
+	if req == nil {
+		log.Printf("POST Request == nil")
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+	if cli.cfg.Sni != "" {
+		if req.URL.Port() == "" {
+			req.Host = cli.cfg.Sni
+		} else {
+			req.Host = cli.cfg.Sni + ":" + req.URL.Port()
+		}
+	}
+	if cli.cfg.Debug == true {
+		for k, v := range req.Header {
+			for _, value := range v {
+				log.Print(k + ": " + value)
+			}
+		}
+	}
+	return cli.client.Do(req)
+}
+
 func (cli *client) init_client() {
 	//tls config
 	cli.tlsconfig = &tls.Config{
-		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: cli.cfg.Insecure,
 		VerifyConnection:   cli.VerifyConnection,
 	}

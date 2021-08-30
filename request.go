@@ -6,95 +6,85 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
+	"net/url"
+	//"strconv"
 )
 
 type request struct {
 	//http request header
 	http_req *http.Request
-	//https request header
-	https_req *http.Request
-	//POST body buf
-	body_buf *bytes.Buffer
-	//
+	//Client request
+	cli_req *http.Request
+	//cfg
 	cfg *config
+	//client.Body io.ReadCloser interface impl
+	readers     []io.Reader
+	multiReader io.Reader
+}
+
+var (
+	ReqDeleteHeader = map[string]bool{
+		//disable websocket upgrade
+		"Upgrade":                  true,
+		"Sec-Websocket-Key":        true,
+		"Sec-Websocket-Version":    true,
+		"Sec-Websocket-Extensions": true,
+		"Sec-WebSocket-Protocol":   true,
+		"Vary":                     true,
+		"Via":                      true,
+		"X-Forwarded-For":          true,
+		"Proxy-Authorization":      true,
+		"Proxy-Connection":         true,
+		"X-Chrome-Variations":      true,
+		"Connection":               true,
+		"Cache-Control":            true,
+	}
+)
+
+func (req *request) MultiReader(readers ...io.Reader) io.ReadCloser {
+	req.readers = readers
+	req.multiReader = io.MultiReader(readers...)
+	return req
+}
+
+func (req *request) Read(p []byte) (n int, err error) {
+	return req.multiReader.Read(p)
+}
+
+func (req *request) Close() (err error) {
+	for _, r := range req.readers {
+		if c, ok := r.(io.Closer); ok {
+			if e := c.Close(); e != nil {
+				err = e
+			}
+		}
+	}
+
+	return err
 }
 
 func (req *request) parse_request() {
-	var real_req *http.Request
-	if req.http_req.Method == http.MethodConnect {
-		real_req = req.https_req
-	} else {
-		real_req = req.http_req
-	}
 	//
 	com := &compress{cfg: req.cfg}
 	//com.level = flate.NoCompression
-	com.level = flate.BestSpeed
+	//com.level = flate.BestSpeed
+	com.level = flate.BestCompression
 	//
-	//process body
-	deflare_body_buf := bytes.NewBuffer(nil)
-	if real_req.ContentLength > 0 && real_req.Header["Content-Encoding"] == nil {
-		com.deflate_compress(deflare_body_buf, real_req.Body)
-		real_req.Header.Del("Content-Length")
-		real_req.Header.Add("Content-Encoding", "deflate")
-		real_req.Header.Add("Content-Length", strconv.Itoa(deflare_body_buf.Len()))
-	} else {
-		io.Copy(deflare_body_buf, real_req.Body)
-	}
-	if real_req.Header.Get("Host") == "" {
-		if req.http_req.Method == http.MethodConnect {
-			real_req.Header.Add("Host", req.http_req.URL.Host)
-		} else {
-			real_req.Header.Add("Host", real_req.URL.Host)
-		}
-	}
-	real_req.Body.Close()
 	//process header
 	header_buf := bytes.NewBuffer(nil)
 	deflare_header_buf := bytes.NewBuffer(nil)
 	var req_line string
-	if req.http_req.Method == http.MethodConnect {
-		req_line = real_req.Method + " " + "https:" + req.http_req.URL.String() + real_req.URL.String() + " " + real_req.Proto
-	} else {
-		req_line = real_req.Method + " " + real_req.URL.String() + " " + real_req.Proto
-	}
+	req_line = req.http_req.Method + " " + req.http_req.URL.String() + " " + req.http_req.Proto
 	log.Print("PHP " + req_line)
 	_, err := header_buf.WriteString(req_line + "\r\n")
 	if err != nil {
 		log.Printf("%s", err)
 	}
 	//
-	real_req.Header.Add("X-URLFETCH-password", req.cfg.Password)
+	req.http_req.Header.Add("X-URLFETCH-password", req.cfg.Password)
 	//
-	real_req.Header.Del("Proxy-Authorization")
-	real_req.Header.Del("Proxy-Connection")
-	real_req.Header.Del("Via")
-	real_req.Header.Del("X-Forwarded-For")
-	real_req.Header.Del("X-Chrome-Variations")
-	real_req.Header.Del("Cache-Control")
-	real_req.Header.Del("Connection")
+	req.http_req.Header.WriteSubset(header_buf, ReqDeleteHeader)
 	//
-	//disable websocket upgrade
-	real_req.Header.Del("Upgrade")
-	real_req.Header.Del("Sec-Websocket-Key")
-	real_req.Header.Del("Sec-Websocket-Version")
-	real_req.Header.Del("Sec-Websocket-Extensions")
-	real_req.Header.Del("Sec-WebSocket-Protocol")
-	//
-	if real_req.Header.Get("Connection") == "Upgrade" {
-		real_req.Header.Del("Connection")
-	}
-
-	for k, v := range real_req.Header {
-		_, err = header_buf.WriteString(k + ": " + v[0] + "\r\n")
-		if req.cfg.Debug == true {
-			log.Print(k + ": " + v[0])
-		}
-		if err != nil {
-			log.Printf("%s", err)
-		}
-	}
 	com.deflate_compress(deflare_header_buf, header_buf)
 	//pack (header length may biger than 65536 bytes)
 	var length [2]byte
@@ -105,11 +95,21 @@ func (req *request) parse_request() {
 		log.Fatal("request header too big")
 	}
 	//
-	req.body_buf = bytes.NewBuffer(length[:2])
-	req.body_buf.Write(deflare_header_buf.Bytes())
-	_, err = req.body_buf.Write(deflare_body_buf.Bytes())
-	if err != nil {
-		log.Printf("%s", err)
+	server, _ := url.Parse(req.cfg.Fetchserver)
+	//
+	req.cli_req = &http.Request{
+		Method: http.MethodPost,
+		URL:    server,
+		Header: http.Header{},
 	}
+	//
+	if req.http_req.ContentLength > 0 {
+		req.cli_req.ContentLength = int64(len(length)+deflare_header_buf.Len()) + req.http_req.ContentLength
+		req.cli_req.Body = req.MultiReader(bytes.NewReader(length[:]), deflare_header_buf, req.http_req.Body)
+	} else {
+		req.cli_req.ContentLength = int64(len(length) + deflare_header_buf.Len())
+		req.cli_req.Body = req.MultiReader(bytes.NewReader(length[:]), deflare_header_buf)
+	}
+	//
 
 }

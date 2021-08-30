@@ -177,7 +177,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	req_op.parse_request()
 	//connect php server
 	start := time.Now()
-	Res, err := prx.client.Post(prx.cfg.Fetchserver, "application/octet-stream", req_op.body_buf)
+	Res, err := prx.client.Do(req_op.cli_req)
 	if prx.cfg.Debug == true {
 		elapsed := time.Since(start)
 		log.Println("HTTP POST Time elapsed:", elapsed)
