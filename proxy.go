@@ -166,7 +166,11 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 		go prx.IOCopy(loConn, tlscon)
-		go prx.IOCopy(tlscon, loConn)
+		prx.IOCopy(tlscon, loConn)
+		err = tlscon.Close()
+		if err != nil {
+			log.Println(err)
+		}
 		return
 
 	} /*else if !req.URL.IsAbs() {
@@ -206,8 +210,22 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	_, err = prx.IOCopy(rw, resp.Body)
 	//
 	if err != nil {
-		log.Println(err)
-		return
+		if err == io.ErrUnexpectedEOF {
+			hijacker, ok := rw.(http.Hijacker)
+			if !ok {
+				log.Println("Not Support Hijacking")
+			}
+			conn, _, err := hijacker.Hijack()
+			if err != nil {
+				log.Println(err)
+			}
+			err = conn.Close()
+			if err != nil {
+				log.Println(err)
+			}
+		} else {
+			log.Println(err)
+		}
 	}
 }
 func (prx *proxy) handleClientConnectRequest(client net.Conn, host string) (tlscon *tls.Conn, err error) {
