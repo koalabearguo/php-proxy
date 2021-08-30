@@ -31,7 +31,7 @@ func (res *response) parse_response() *http.Response {
 	}
 	if res.cfg.Debug {
 		elapsed := time.Since(start)
-		log.Println("First Data Decrypt Time elapsed:", elapsed)
+		log.Println("First Data Decrypt Time:", elapsed)
 	}
 	//
 	resp, err := http.ReadResponse(bufio.NewReader(res.res.Body), res.res.Request)

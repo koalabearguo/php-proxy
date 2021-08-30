@@ -178,13 +178,19 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}*/
 	//parse http request
-	req_op.parse_request()
-	//connect php server
 	start := time.Now()
+	req_op.parse_request()
+	if prx.cfg.Debug == true {
+		elapsed := time.Since(start)
+		log.Println("HTTP POST body Proc Time:", elapsed)
+	}
+	//
+	//connect php server
+	start  = time.Now()
 	Res, err := prx.client.Do(req_op.cli_req)
 	if prx.cfg.Debug == true {
 		elapsed := time.Since(start)
-		log.Println("HTTP POST Time elapsed:", elapsed)
+		log.Println("HTTP POST Time:", elapsed)
 	}
 	if err != nil {
 		log.Println(err)
