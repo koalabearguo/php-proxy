@@ -18,7 +18,6 @@
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
 |2 byte(header length)| + |header(deflate压缩)| + |body| = POST Body,其中header中的第一行的url路径是绝对路径;
 返回的响应Body就是代理到的所有数据（头+Body）,经过解密后发送到浏览器客户端
-- 这种代理模式实际上用的是HTTP/1.0模式，每次请求接收完成后就关闭了socket，没有connection：keep-alive，所以没有正向代理性能好，例如squid。更没有http2的端口复用效果好
 - GoAgent由于python ssl版本的问题，在向https server发送请求时，并不会发送tls中的sni扩展，当然Host头还是会发的，不过这样好像不能穿过CDN，试过cloudflare，请求不成功
 - 这种模式的代理相当于经过了三级的代理，本机算一级，php server算一级，curl算一级，所以延时有点高，小流量使用还行吧
 - 这种代理只能代理http/https连接，当然curl应该是支持ftp的，不过CONNECT请求信息中，我们并不能知道接下来要走什么协议，默认是处理成https了
@@ -87,7 +86,7 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
-- 代理访问延时有点大，HTTP数据的阻塞实现问题
+- 代理访问延时有点大，HTTP数据的阻塞实现问题优化
 - 代理下载大文件(目前浏览网页没问题,下载大文件会有问题)优化实现
 
 ### 感谢
