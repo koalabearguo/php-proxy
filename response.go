@@ -20,6 +20,16 @@ var ResDeleteHeader = []string{"Upgrade", "Alt-Svc", "Alternate-Protocol", "Expe
 
 func (res *response) parse_response() *http.Response {
 	//
+	if res.cfg.Debug {
+		for k, v := range res.res.Header {
+			for _, value := range v {
+				log.Print(k + ":" + value)
+			}
+		}
+		for _, chunkstr := range res.res.TransferEncoding {
+			log.Print("Transfer-Encoding" + ":" + chunkstr)
+		}
+	}
 	encrypt := &encrypt{cfg: res.cfg}
 	//
 	if res.res.StatusCode != http.StatusOK {
@@ -34,10 +44,11 @@ func (res *response) parse_response() *http.Response {
 		log.Println("First Data Decrypt Time:", elapsed)
 	}
 	//
+	//return res.res //for test
 	resp, err := http.ReadResponse(bufio.NewReader(res.res.Body), res.res.Request)
 	if err != nil {
 		log.Println(err)
-		return nil //This Can be opt for feature
+		return res.res
 	}
 	//
 	if resp.Header.Get("Content-Length") == "" && resp.ContentLength >= 0 {

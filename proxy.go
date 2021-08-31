@@ -123,11 +123,17 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.Method != "CONNECT" && !req.URL.IsAbs() {
 		//
 		req.URL.Scheme = "https"
-		req.URL.Host = req.Host
+		if req.Host == "" {
+			req.URL.Host = "localhost"
+		} else {
+			req.URL.Host = req.Host
+		}
+		if prx.cfg.Debug {
+			log.Printf("Request Host:%s", req.URL.Host)
+		}
 
 	}
 	//
-	req_op := &request{cfg: prx.cfg, http_req: req}
 	//Strip ssl
 	if req.Method == http.MethodConnect {
 		hijacker, ok := rw.(http.Hijacker)
@@ -173,10 +179,10 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		return
 
-	} /*else if !req.URL.IsAbs() {
-		_, _ = io.WriteString(rw, "HTTP/1.0 200 OK\r\n\r\nThis is php-proxy client.")
-		return
-	}*/
+	}
+	//
+	req_op := &request{cfg: prx.cfg, http_req: req}
+	//
 	//parse http request
 	start := time.Now()
 	req_op.parse_request()
@@ -186,7 +192,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	//
 	//connect php server
-	start  = time.Now()
+	start = time.Now()
 	Res, err := prx.client.Do(req_op.cli_req)
 	if prx.cfg.Debug == true {
 		elapsed := time.Since(start)
@@ -200,11 +206,12 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	proxy_res_data := &response{res: Res, cfg: prx.cfg}
 	resp := proxy_res_data.parse_response()
 
-	defer resp.Body.Close()
-
 	if resp == nil {
+		log.Println("Response is nil")
 		return
 	}
+
+	defer resp.Body.Close()
 
 	for key, values := range resp.Header {
 		for _, value := range values {
