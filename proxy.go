@@ -169,6 +169,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		loConn, err := net.Dial("tcp", prx.cfg.Listen)
 		if err != nil {
 			log.Println(err)
+			tlscon.Close()
 			return
 		}
 		go prx.IOCopy(loConn, tlscon)
