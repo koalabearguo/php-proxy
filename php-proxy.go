@@ -16,4 +16,5 @@ func main() {
 	prx := &proxy{cfg: config}
 	prx.init_proxy()
 	//
+	select {}
 }

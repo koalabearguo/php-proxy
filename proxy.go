@@ -20,8 +20,6 @@ import (
 type proxy struct {
 	//global config
 	cfg *config
-	//proxy server listener
-	listenter *net.Listener
 	//prepare static buf
 	bufpool sync.Pool
 	//php client
@@ -104,6 +102,7 @@ func (prx *proxy) init_proxy() {
 			return make([]byte, 32*1024)
 		},
 	}
+	//
 	log.Fatal(http.ListenAndServe(prx.cfg.Listen, prx))
 	//
 
