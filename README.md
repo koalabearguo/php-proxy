@@ -77,6 +77,7 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 另外隐藏的功能就是，假如你用了cloudflare的cdn，那么它给你域名分配的IP，一般有两个,这两个IP一般不是最优的，可以借助其他工具([better-cloudflare-ip](https://github.com/badafans/better-cloudflare-ip))查找其他的CDN ip,找到性能好的，
 通过这种指定IP的模式，可以更好的使用CDN加速
 另外提一下，如果IP没被封锁，但TLS SNI被盯上了，这个好办，换个域名就好了（好多地方可以免费申请域名）
+
 11. v2.0.0版本，重写了数据处理过程，修复了下载问题，性能大幅提升，感谢[10362227](https://github.com/10362227)所做的对比与测试
 ### 注意事项
 - 由于我自己生成的php-proxy.key/crt私钥和公钥的公开，如果导入到系统中，可能会导致一些钓鱼网站的恶意使用;在访问一些以Php-Proxy CA签发的https网站，本机浏览器
