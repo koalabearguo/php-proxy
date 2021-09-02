@@ -171,9 +171,14 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			tlscon.Close()
 			return
 		}
-		go prx.IOCopy(loConn, tlscon)
-		prx.IOCopy(tlscon, loConn)
+
+		go prx.IOCopy(tlscon, loConn)
+		prx.IOCopy(loConn, tlscon)
 		err = tlscon.Close()
+		if err != nil {
+			log.Println(err)
+		}
+		err = loConn.Close()
 		if err != nil {
 			log.Println(err)
 		}
