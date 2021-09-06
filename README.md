@@ -26,7 +26,7 @@
 ### 使用
 1. 把php-proxy.crt CA证书导入到系统中
 2. 把index.php上传到一个(免费的)php空间中，位置名称随意,记下php文件的网络地址(这里最好用一个CDN加速，例如cloudflare，因为免费空间基本速度不快)
-3. 在右侧release下载对应平台的可执行文件(这里也可以自己根据go文件生成,cmd命令窗口/linux终端下，切换到当前目录，直接go build就可以了，如果构建失败，请升级go版本)
+3. 在右侧release下载对应平台的可执行文件(这里也可以自己根据go文件生成,cmd命令窗口/linux终端下，切换到当前目录，直接go build \*.go([参考](https://github.com/koalabearguo/php-proxy/wiki))就可以了，如果构建失败，请升级go版本)
 4. cmd命令窗口/linux终端执行php-proxy -s php文件的网络地址,这时本地127.0.0.1:8081就是一个http proxy
 ```
 #windows监听127.0.0.1:8080
