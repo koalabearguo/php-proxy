@@ -12,7 +12,7 @@ import (
 	"net"
 	"net/http"
 	"os"
-	//"strings"
+	"strings"
 	"sync"
 	"time"
 )
@@ -228,7 +228,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	_, err = prx.IOCopy(rw, resp.Body)
 	//
 	if err != nil {
-		if err == io.ErrUnexpectedEOF {
+		if strings.Contains(err.Error(), io.ErrUnexpectedEOF.Error()) == true {
 			hijacker, ok := rw.(http.Hijacker)
 			if !ok {
 				log.Println("Not Support Hijacking")
