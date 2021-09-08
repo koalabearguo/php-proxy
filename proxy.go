@@ -205,6 +205,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	if err != nil {
 		log.Println(err)
+		http.Error(rw, "empty response", http.StatusBadGateway)
 		return
 	}
 	//
