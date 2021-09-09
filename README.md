@@ -13,7 +13,7 @@
 - 支持HTTP2，server与client保持一个连接，端口复用性能提升
 - 由于php-proxy.crt/key根证书公钥私钥公开了，这里在检测到以公开根证书作为根的中间人(php server)，就会断开与服务器的通信
 - 为了安全性以及使用的灵活性，添加支持自定义CA
-- dev分支是一个只支持`HTTP3`的版本,测试可以跟cloudflare CDN通信
+- 支持`HTTP3`(dev分支，用于尝鲜测试),测试可以跟cloudflare CDN通信
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
