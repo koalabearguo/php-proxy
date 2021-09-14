@@ -209,6 +209,8 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	//
+	defer Res.Body.Close()
+	//
 	proxy_res_data := &response{res: Res, cfg: prx.cfg}
 	resp := proxy_res_data.parse_response()
 

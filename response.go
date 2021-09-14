@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
-	//"bytes"
+	"bytes"
 	"log"
 	"net/http"
 	"strconv"
 	//"strings"
-	//"io"
+	"io"
 	"time"
 )
 
@@ -17,6 +17,25 @@ type response struct {
 }
 
 var ResDeleteHeader = []string{"Upgrade", "Alt-Svc", "Alternate-Protocol", "Expect-CT"}
+
+func (res *response) patch_response(r *bufio.Reader, req *http.Request) (resp *http.Response, error error) {
+	//
+	prefix := make([]byte, 7)
+	n, err := io.ReadFull(r, prefix)
+	if err != nil {
+		return nil, err
+	}
+	//
+	if string(prefix[:n]) == "HTTP/2 " {
+		// fix HTTP/2 proto
+		resp, error = http.ReadResponse(bufio.NewReader(io.MultiReader(bytes.NewBufferString("HTTP/2.0 "), r)), req)
+	} else {
+		// other proto
+		resp, error = http.ReadResponse(bufio.NewReader(io.MultiReader(bytes.NewBuffer(prefix[:n]), r)), req)
+	}
+	//
+	return resp, error
+}
 
 func (res *response) parse_response() *http.Response {
 	//
@@ -45,7 +64,8 @@ func (res *response) parse_response() *http.Response {
 	}
 	//
 	//return res.res //for test
-	resp, err := http.ReadResponse(bufio.NewReader(res.res.Body), res.res.Request)
+	//resp, err := http.ReadResponse(bufio.NewReader(res.res.Body), res.res.Request)
+	resp, err := res.patch_response(bufio.NewReader(res.res.Body), res.res.Request)
 	if err != nil {
 		log.Println(err)
 		return res.res
