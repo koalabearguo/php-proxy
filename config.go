@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"runtime"
 )
 
 //CaCert/CA.crt should be trusted by local OS
@@ -64,7 +65,7 @@ jIxm1tgZheqRxqpv1LwQ4hQ=
 -----END PRIVATE KEY-----`)
 
 //
-const version string = "2.0.1"
+const version string = "2.1.0"
 
 //
 
@@ -81,11 +82,15 @@ type config struct {
 	Debug bool `json:"debug"`
 	//insecure connect to php server
 	Insecure bool `json:"insecure"`
+	//auto proxy
+	Autoproxy bool `json:"autoproxy"`
 }
 
 func (c *config) init_config() {
 	//
 	log.Printf("Php-Proxy version:v%s\n", version)
+	//
+	log.Printf("Go version:%s\n", runtime.Version())
 	//
 	flag.CommandLine.SetOutput(os.Stdout)
 	//
@@ -94,13 +99,21 @@ func (c *config) init_config() {
 	flag.StringVar(&c.Sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.Fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
 	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
+	flag.BoolVar(&c.Autoproxy, "a", false, "enable auto proxy")
 	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
+	//
 	//c.writeconfig()
 	if len(os.Args) < 2 {
 		c.loadconfig()
 	} else {
 		c.writeconfig()
+	}
+	//
+	if c.Autoproxy {
+		log.Printf("Autoproxy enabled")
+	} else {
+		log.Printf("Autoproxy not enabled")
 	}
 	//
 	log.Printf("php Fetch server:%s\n", c.Fetchserver)
