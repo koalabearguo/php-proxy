@@ -124,6 +124,8 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	defer client.Close()
+	//
 	var address string
 	if strings.Index(req.Host, ":") == -1 { //host port not include,default 80
 		address = req.Host + ":http"
@@ -136,6 +138,8 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 		log.Println(err)
 		return
 	}
+	defer server.Close()
+	//
 	if req.Method == http.MethodConnect {
 		io.WriteString(client, "HTTP/1.1 200 Connection established\r\n\r\n")
 	} else {
@@ -145,9 +149,6 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 	//exchange data
 	go prx.IOCopy(server, client)
 	prx.IOCopy(client, server)
-	//
-	client.Close()
-	server.Close()
 }
 func (prx *proxy) isblocked(host string) bool {
 	hostname := stripPort(host)
