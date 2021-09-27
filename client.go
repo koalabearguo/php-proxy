@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"reflect"
 	"time"
 )
@@ -23,6 +24,8 @@ type client struct {
 	client *http.Client
 	//ca root cert info for middle attack check
 	cert *x509.Certificate
+	//server
+	server *url.URL
 }
 
 func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
@@ -66,10 +69,18 @@ func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
 			}
 		}
 	}
+	req.URL = cli.server
 	return cli.client.Do(req)
 }
 
 func (cli *client) init_client() {
+	//
+	server, err := url.Parse(cli.cfg.Fetchserver)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cli.server = server
+	//
 	//tls config
 	cli.tlsconfig = &tls.Config{
 		InsecureSkipVerify: cli.cfg.Insecure,

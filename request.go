@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	//"strconv"
 )
 
@@ -95,11 +94,8 @@ func (req *request) parse_request() {
 		log.Fatal("request header too big")
 	}
 	//
-	server, _ := url.Parse(req.cfg.Fetchserver)
-	//
 	req.cli_req = &http.Request{
 		Method: http.MethodPost,
-		URL:    server,
 		Header: http.Header{},
 	}
 	//
