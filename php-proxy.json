@@ -4,5 +4,6 @@
 "sni": "a.bc.com",
 "listen": "127.0.0.1:8081",
 "debug": false,
-"insecure": false
+"insecure": false,
+"autoproxy": true
 }

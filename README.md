@@ -80,6 +80,18 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 另外提一下，如果IP没被封锁，但TLS SNI被盯上了，这个好办，换个域名就好了（好多地方可以免费申请域名）
 
 11. v2.0.0版本，重写了数据处理过程，修复了下载问题，性能大幅提升，感谢[10362227](https://github.com/10362227)所做的对比与测试
+12. v2.1.0版本,支持智能代理功能(采用内置的域名列表匹配模式),该功能默认未启用
+```
+{
+"fetchserver": "https://a.bc.com/go/index.php",
+"password": "123456",
+"sni": "a.bc.com",
+"listen": "127.0.0.1:8081",
+"debug": false,
+"insecure": false,
+"autoproxy": true
+}
+```
 ### 注意事项
 - 由于我自己生成的php-proxy.key/crt私钥和公钥的公开，如果导入到系统中，可能会导致一些钓鱼网站的恶意使用;在访问一些以Php-Proxy CA签发的https网站，本机浏览器
 会直接信任这种网站,可能会造成隐私泄露;如果你用的chrome浏览器，建议php-proxy.crt证书不导到系统中，在chrome快捷方式目标后面加上--ignore-certificate-errors
@@ -88,7 +100,6 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
-- 增加智能代理功能
 
 ### 感谢
 - GoAgent项目，让我学习了Python，php
