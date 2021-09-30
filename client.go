@@ -53,6 +53,8 @@ func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Res
 func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
 	if req == nil {
 		log.Printf("POST Request == nil")
+	} else {
+		req.URL = cli.server
 	}
 	req.Header.Set("Content-Type", "application/octet-stream")
 	if cli.cfg.Sni != "" {
@@ -69,7 +71,6 @@ func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
 			}
 		}
 	}
-	req.URL = cli.server
 	return cli.client.Do(req)
 }
 
