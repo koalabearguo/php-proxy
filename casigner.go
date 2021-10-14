@@ -97,14 +97,15 @@ func SignHosts(ca tls.Certificate, hosts []string) (*tls.Certificate, error) {
 	}
 	//start := time.Unix(0, 0)
 	start := time.Now()
-	end, _ := time.Parse("2006-01-02", "2031-01-19")
+	//end, _ := time.Parse("2006-01-02", "2031-01-19")
 	serial := hashSortedBigInt(append(hosts, "1"))
 	template := x509.Certificate{
-		SerialNumber:          serial,
-		Issuer:                x509ca.Subject,
-		Subject:               x509ca.Subject,
-		NotBefore:             start,
-		NotAfter:              end,
+		SerialNumber: serial,
+		Issuer:       x509ca.Subject,
+		Subject:      x509ca.Subject,
+		NotBefore:    start,
+		//NotAfter:              end,
+		NotAfter:              x509ca.NotAfter,
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
