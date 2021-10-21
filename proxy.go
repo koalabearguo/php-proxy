@@ -283,10 +283,13 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			rw.Header().Add(key, value)
 		}
 	}
-	//Patch CROS
+	//Patch CORS
 	origin := req_op.http_req.Header.Get("Origin")
 	if origin != "" && rw.Header().Get("Access-Control-Allow-Origin") == "" {
 		rw.Header().Add("Access-Control-Allow-Origin", origin)
+	}
+	if req_op.http_req.Header.Get("Cookie") != "" && origin != "" && rw.Header().Get("Access-Control-Allow-Credentials") == "" {
+		rw.Header().Add("Access-Control-Allow-Credentials", "true")
 	}
 	//
 	rw.WriteHeader(resp.StatusCode)
