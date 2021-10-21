@@ -283,6 +283,11 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			rw.Header().Add(key, value)
 		}
 	}
+	//Patch CROS
+	origin := req_op.http_req.Header.Get("Origin")
+	if origin != "" && rw.Header().Get("Access-Control-Allow-Origin") == "" {
+		rw.Header().Add("Access-Control-Allow-Origin", origin)
+	}
 	//
 	rw.WriteHeader(resp.StatusCode)
 	_, err = prx.IOCopy(rw, resp.Body)
