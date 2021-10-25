@@ -156,22 +156,18 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 	for true {
 		err = Req.Write(server)
 		if err != nil {
-			log.Println(err)
 			return
 		}
 		Res, err := http.ReadResponse(bufio.NewReader(server), Req)
 		if err != nil {
-			log.Println(err)
 			return
 		}
 		err = Res.Write(client)
 		if err != nil {
-			log.Println(err)
 			return
 		}
 		Req, err = http.ReadRequest(bufio.NewReader(client))
 		if err != nil {
-			log.Println(err)
 			return
 		}
 		//
