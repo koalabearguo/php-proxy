@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"bufio"
+	"bufio"
 	//"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -142,13 +142,44 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 	//
 	if req.Method == http.MethodConnect {
 		io.WriteString(client, "HTTP/1.1 200 Connection established\r\n\r\n")
-	} else {
-		req.Write(server)
+		//exchange data
+		go prx.IOCopy(server, client)
+		prx.IOCopy(client, server)
+		return
+	}
+	//
+	req.Header.Del("Proxy-Authorization")
+	req.Header.Del("Proxy-Connection")
+	//
+	Req := req
+	//http proxy keep alive
+	for true {
+		err = Req.Write(server)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		Res, err := http.ReadResponse(bufio.NewReader(server), Req)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		err = Res.Write(client)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		Req, err = http.ReadRequest(bufio.NewReader(client))
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		//
+		req.Header.Del("Proxy-Authorization")
+		req.Header.Del("Proxy-Connection")
+		//
 	}
 
-	//exchange data
-	go prx.IOCopy(server, client)
-	prx.IOCopy(client, server)
 }
 func (prx *proxy) isblocked(host string) bool {
 	hostname := stripPort(host)
@@ -298,6 +329,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req_op.http_req.Header.Get("Cookie") != "" && origin != "" && rw.Header().Get("Access-Control-Allow-Credentials") == "" {
 		rw.Header().Add("Access-Control-Allow-Credentials", "true")
 	}
+	//rw.Header().Set("Set-Cookie", rw.Header().Get("Set-Cookie") + ";HttpOnly;Secure;SameSite=Strict" )
 	//
 	rw.WriteHeader(resp.StatusCode)
 	_, err = prx.IOCopy(rw, resp.Body)
