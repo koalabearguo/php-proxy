@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
 	//"strings"
-	"io"
 	"time"
 )
 
@@ -47,6 +47,9 @@ func (res *response) parse_response() *http.Response {
 		}
 		for _, chunkstr := range res.res.TransferEncoding {
 			log.Print("Transfer-Encoding" + ":" + chunkstr)
+		}
+		if res.res.Uncompressed {
+			log.Print("Content-Encoding" + ":" + "compressed")
 		}
 	}
 	encrypt := &encrypt{cfg: res.cfg}

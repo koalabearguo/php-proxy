@@ -81,7 +81,20 @@ func (req *request) parse_request() {
 	//
 	req.http_req.Header.Add("X-URLFETCH-password", req.cfg.Password)
 	//
+	//for feature use(index.php need upgrade)
+	if req.cfg.Insecure {
+		req.http_req.Header.Add("X-URLFETCH-insecure", "1")
+	}
+	//
 	req.http_req.Header.WriteSubset(header_buf, ReqDeleteHeader)
+	//
+	if req.cfg.Debug {
+		for k, v := range req.http_req.Header {
+			for _, value := range v {
+				log.Print(k + ":" + value)
+			}
+		}
+	}
 	//
 	com.deflate_compress(deflare_header_buf, header_buf)
 	//
