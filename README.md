@@ -1,7 +1,8 @@
 # php-proxy
-最近在学习golang，闲来无聊就找个项目把它用golang写了一遍，嗯，golang真香；
-本项目主要实现的是GoAgent的php代理模式，协议兼容GoAgent php模式；
-本项目主要用于个人学习，研究免费php空间的用途，严禁用于非法用途，后果自负
+gzip分支，不兼容GoAgent的php代理模式，就是在客户端与服务端加了一层gzip压缩
+由于GoAgent的php中的content-type是imag/gif，所以服务端默认是不压缩这种内容的
+修改成text/html后，除了video/audio/application等之外的内容是可以gzip压缩的
+目前处于测试阶段，测试效果强于不压缩的版本，表现就是快一点...
 
 ### 特性以及改进
 - 在连接php server时，https模式支持TLS sni的发送，可以用来穿过CDN，尤其是cloudflare

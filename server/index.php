@@ -4,8 +4,8 @@
 $__version__  = '3.2.6';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
-$__content_type__ = 'image/gif';
-//$__content_type__ = 'text/html';
+//$__content_type__ = 'image/gif';
+$__content_type__ = 'text/html';
 $__timeout__ = 20;
 $__content__ = '';
 
@@ -85,7 +85,7 @@ function decode_request($data) {
 
 function echo_content($content) {
     global $__password__, $__content_type__;
-    if ($__content_type__ == 'image/gif') {
+    if ($__content_type__ == 'text/html') {
         echo $content ^ str_repeat($__password__[0], strlen($content));
     } else {
         echo $content;

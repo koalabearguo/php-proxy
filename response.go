@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	//"strings"
+	"strings"
 	"time"
 )
 
@@ -58,7 +58,8 @@ func (res *response) parse_response() *http.Response {
 		return res.res
 	}
 	start := time.Now()
-	if res.res.Header.Get("Content-Type") == "image/gif" && res.res.Body != nil {
+	//if res.res.Header.Get("Content-Type") == "image/gif" && res.res.Body != nil {
+	if strings.Contains(res.res.Header.Get("Content-Type"), "text/html") && res.res.Body != nil {
 		res.res.Body = encrypt.decrypt_reader(res.res.Body)
 	}
 	if res.cfg.Debug {
