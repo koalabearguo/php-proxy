@@ -315,6 +315,9 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for key, values := range resp.Header {
 		for _, value := range values {
 			rw.Header().Add(key, value)
+			if prx.cfg.Debug {
+				log.Print(key + ":" + value)
+			}
 		}
 	}
 	//Patch CORS
