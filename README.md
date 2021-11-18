@@ -1,8 +1,10 @@
 # php-proxy
-gzip分支，不兼容GoAgent的php代理模式，就是在客户端与服务端加了一层gzip压缩
-由于GoAgent的php中的content-type是imag/gif，所以服务端默认是不压缩这种内容的
-修改成text/html后，除了video/audio/application等之外的内容是可以gzip压缩的
+gzip分支，不兼容GoAgent的php代理模式，就是在客户端与服务端加了一层gzip压缩,
+由于GoAgent的php中的content-type是imag/gif，所以服务端默认是不压缩这种内容的,
+修改成text/html后，除了video/audio/application等之外的内容是可以gzip压缩的,
 目前处于测试阶段，测试效果强于不压缩的版本，表现就是快一点...
+另外也不绝对，就是如果内容的本身已经是经过gzip编码的(就是php中curl fetch的内容已经压缩了)，
+再经过一次压缩，会增加CPU的负载，会达到相反的效果
 
 ### 特性以及改进
 - 在连接php server时，https模式支持TLS sni的发送，可以用来穿过CDN，尤其是cloudflare
