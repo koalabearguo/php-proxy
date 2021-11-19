@@ -111,6 +111,8 @@ func (req *request) parse_request() {
 		Method: http.MethodPost,
 		Header: http.Header{},
 	}
+	//default use brower UA
+	req.cli_req.Header.Set("User-Agent", req.http_req.Header.Get("User-Agent"))
 	//
 	if req.http_req.ContentLength > 0 {
 		req.cli_req.ContentLength = int64(len(length)+deflare_header_buf.Len()) + req.http_req.ContentLength
