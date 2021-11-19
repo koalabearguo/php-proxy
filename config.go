@@ -65,7 +65,7 @@ jIxm1tgZheqRxqpv1LwQ4hQ=
 -----END PRIVATE KEY-----`)
 
 //
-const version string = "2.1.1"
+const version string = "2.1.2"
 
 //
 
@@ -84,6 +84,8 @@ type config struct {
 	Insecure bool `json:"insecure"`
 	//auto proxy
 	Autoproxy bool `json:"autoproxy"`
+	//user agent
+	User_agent string `json:"user-agent"`
 }
 
 func (c *config) init_config() {
@@ -98,6 +100,7 @@ func (c *config) init_config() {
 	flag.StringVar(&c.Password, "p", "123456", "php server password")
 	flag.StringVar(&c.Sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.Fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
+	flag.StringVar(&c.User_agent, "ua", "", "customize User-Agent to php server(default use brower User-Agent)")
 	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
 	flag.BoolVar(&c.Autoproxy, "a", false, "enable auto proxy")
 	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")

@@ -93,9 +93,22 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 "autoproxy": true
 }
 ```
+13. v2.1.2版本,支持自定义user-agent,当user-agent配置为空时，使用请求端的UA，否则使用自定义的UA
+```
+{
+"fetchserver": "https://a.bc.com/go/index.php",
+"password": "123456",
+"sni": "a.bc.com",
+"listen": "127.0.0.1:8081",
+"debug": false,
+"insecure": false,
+"autoproxy": true,
+"user-agent": ""
+}
+```
 ### 注意事项
 - 由于我自己生成的php-proxy.key/crt私钥和公钥的公开，如果导入到系统中，可能会导致一些钓鱼网站的恶意使用;在访问一些以Php-Proxy CA签发的https网站，本机浏览器
-会直接信任这种网站,可能会造成隐私泄露;如果你用的chrome浏览器，建议php-proxy.crt证书不导到系统中，在chrome快捷方式目标后面加上--ignore-certificate-errors
+会直接信任这种网站,可能会造成隐私泄露;如果你用的chrome浏览器，建议php-proxy.crt证书不要导到入到系统中，在chrome快捷方式目标后面加上--ignore-certificate-errors
 这样chrome也是可以用的,只是地址栏中会显示红色,这不影响使用;如果确实你需要导入CA到系统中，则在不使用时，建议从根证书系统中删除;
 所以为了安全起见，建议自己动手生成CA;当然你觉得也没啥隐私可泄露的，这也无所谓了
 

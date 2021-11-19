@@ -57,6 +57,9 @@ func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
 		req.URL = cli.server
 	}
 	req.Header.Set("Content-Type", "application/octet-stream")
+	if cli.cfg.User_agent != "" {
+		req.Header.Set("User-Agent", cli.cfg.User_agent)
+	}
 	if cli.cfg.Sni != "" {
 		if req.URL.Port() == "" {
 			req.Host = cli.cfg.Sni
