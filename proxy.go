@@ -325,7 +325,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if origin != "" && rw.Header().Get("Access-Control-Allow-Origin") == "" {
 		rw.Header().Add("Access-Control-Allow-Origin", origin)
 	}
-	if req_op.http_req.Header.Get("Cookie") != "" && origin != "" && rw.Header().Get("Access-Control-Allow-Credentials") == "" {
+	if origin != "" && rw.Header().Get("Access-Control-Allow-Credentials") == "" {
 		rw.Header().Add("Access-Control-Allow-Credentials", "true")
 	}
 	//rw.Header().Set("Set-Cookie", rw.Header().Get("Set-Cookie") + ";HttpOnly;Secure;SameSite=Strict" )
