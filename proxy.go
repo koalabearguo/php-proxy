@@ -292,9 +292,7 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		origin := req_op.http_req.Header.Get("Origin")
 		if origin != "" {
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
-			if req_op.http_req.Header.Get("Cookie") != "" {
-				rw.Header().Add("Access-Control-Allow-Credentials", "true")
-			}
+			rw.Header().Add("Access-Control-Allow-Credentials", "true")
 		}
 		http.Error(rw, "empty response", http.StatusBadGateway)
 		return
