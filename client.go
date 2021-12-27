@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"errors"
 	"io"
 	"log"
@@ -26,6 +29,8 @@ type client struct {
 	cert *x509.Certificate
 	//server
 	server *url.URL
+	//proxy
+	urlproxy *url.URL
 }
 
 func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Response, err error) {
@@ -96,9 +101,16 @@ func (cli *client) init_client() {
 	if cli.cfg.Sni != "" {
 		cli.tlsconfig.ServerName = cli.cfg.Sni
 	}
+	//parent proxy
+	if cli.cfg.Proxy != "" {
+		cli.urlproxy, err = url.Parse(cli.cfg.Proxy)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 	//tr http.client default tr + tlsconfig
 	cli.tr = &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
+		//Dial: cli.Dial,
 		DialContext: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -109,6 +121,11 @@ func (cli *client) init_client() {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		TLSClientConfig:       cli.tlsconfig,
+	}
+	if cli.urlproxy != nil {
+		cli.tr.Proxy = http.ProxyURL(cli.urlproxy)
+	} else {
+		cli.tr.Proxy = http.ProxyFromEnvironment
 	}
 	//
 	cli.client = &http.Client{
@@ -124,4 +141,53 @@ func (cli *client) VerifyConnection(cs tls.ConnectionState) error {
 		cli.tlsconfig.VerifyConnection = nil
 		return nil
 	}
+}
+
+//for HTTPS Forward PROXY dialer(need test)
+func (cli *client) Dial(network, addr string) (c net.Conn, err error) {
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: cli.cfg.Insecure,
+	}
+	conn, err := tls.Dial("tcp", cli.urlproxy.Hostname()+":"+cli.urlproxy.Port(), tlsconfig)
+	if err != nil {
+		return conn, errors.New("HTTPS Proxy:" + err.Error())
+	}
+	req := &http.Request{
+		Method:        http.MethodConnect,
+		Header:        http.Header{},
+		Host:          addr,
+		URL:           &url.URL{Path: addr},
+		ContentLength: 0,
+		Body:          nil,
+	}
+	req.Header.Set("Host", addr)
+	req.Header.Set("Proxy-Connection", "keep-alive")
+	if cli.urlproxy.User != nil {
+		p := base64.StdEncoding.EncodeToString([]byte(cli.urlproxy.User.String()))
+		log.Print(p)
+		req.Header.Set("Proxy-Authorization", "Basic "+p)
+	}
+	//
+	err_wr := req.Write(conn)
+	if err_wr != nil {
+		conn.Close()
+		return conn, errors.New("HTTPS Proxy:" + err_wr.Error())
+	}
+	var b [1024]byte
+	n, err := conn.Read(b[:])
+	if err != nil {
+		conn.Close()
+		return conn, errors.New("HTTPS Proxy:" + err.Error())
+	}
+	Res, err_rd := http.ReadResponse(bufio.NewReader(bytes.NewReader(b[:n])), req)
+	if err_rd != nil {
+		conn.Close()
+		return conn, errors.New("HTTPS Proxy:" + err_rd.Error())
+	}
+	if Res.StatusCode != http.StatusOK {
+		conn.Close()
+		return conn, errors.New("HTTPS Proxy:" + "Connect status error")
+	}
+	return conn, nil
+
 }
