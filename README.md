@@ -16,6 +16,7 @@
 - 支持`HTTP3`(dev分支，用于尝鲜测试),测试可以跟cloudflare CDN通信
 - 支持智能代理模式
 - 支持自定义User-Agent(UA)
+- 支持前置代理功能(目前支持的协议有http,socks5)
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
@@ -105,6 +106,29 @@ php-proxy.key文件，则使用内部预留的CA(也就是我自己生成的CA),
 "insecure": false,
 "autoproxy": true,
 "user-agent": ""
+}
+```
+14. v2.1.3版本,支持前置代理,当proxy配置为空时，不使用前置代理;这种代理只在连接到php server时使用，在智能代理模式中，直接连接是不经过前置代理的
+目前只支持http，socks5协议,配置格式参考如下:
+```
+//http
+http://127.0.0.1:80
+http://koala:123456@127.0.0.1:80
+//socks5
+socks5://user:password@127.0.0.1:1080
+socks5://127.0.0.1:1080
+```
+```
+{
+"fetchserver": "https://a.bc.com/go/index.php",
+"password": "123456",
+"sni": "a.bc.com",
+"listen": "127.0.0.1:8081",
+"debug": false,
+"insecure": false,
+"autoproxy": true,
+"user-agent": "",
+"proxy": "http://koala:free@127.0.0.1:80"
 }
 ```
 ### 注意事项
