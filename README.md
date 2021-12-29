@@ -140,6 +140,7 @@ socks5://127.0.0.1:1080
 ### php免费空间推荐
 - [000webhost](https://www.000webhost.com/) 
 - [heroku](https://www.heroku.com/) 
+- [Vercel](https://vercel.com/) 
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
