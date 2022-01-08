@@ -123,6 +123,10 @@ func (cli *client) init_client() {
 		TLSClientConfig:       cli.tlsconfig,
 	}
 	if cli.urlproxy != nil {
+		if cli.urlproxy.Scheme == "https" {
+			//for connect https proxy server
+			cli.tr.DialTLS = cli.DialTLS
+		}
 		cli.tr.Proxy = http.ProxyURL(cli.urlproxy)
 	} else {
 		cli.tr.Proxy = http.ProxyFromEnvironment
@@ -132,6 +136,7 @@ func (cli *client) init_client() {
 		Transport: cli.tr,
 	}
 }
+
 func (cli *client) VerifyConnection(cs tls.ConnectionState) error {
 	//
 	cert := cs.PeerCertificates[0]
@@ -141,6 +146,14 @@ func (cli *client) VerifyConnection(cs tls.ConnectionState) error {
 		cli.tlsconfig.VerifyConnection = nil
 		return nil
 	}
+}
+
+func (cli *client) DialTLS(network, addr string) (net.Conn, error) {
+	tlsconfig := &tls.Config{
+		InsecureSkipVerify: cli.cfg.Insecure,
+	}
+	conn, err := tls.Dial(network, addr, tlsconfig)
+	return conn, err
 }
 
 //for HTTPS Forward PROXY dialer(need test)
