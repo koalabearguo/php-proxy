@@ -156,12 +156,22 @@ func (cli *client) DialTLS(network, addr string) (net.Conn, error) {
 	return conn, err
 }
 
-//for HTTPS Forward PROXY dialer(need test)
+//for HTTPS Forward PROXY dialer for feature use(need test)
 func (cli *client) Dial(network, addr string) (c net.Conn, err error) {
 	tlsconfig := &tls.Config{
 		InsecureSkipVerify: cli.cfg.Insecure,
 	}
-	conn, err := tls.Dial("tcp", cli.urlproxy.Hostname()+":"+cli.urlproxy.Port(), tlsconfig)
+	var port string
+	if cli.urlproxy.Port() == "" {
+		if cli.urlproxy.Scheme == "http" {
+			port = "80"
+		} else if cli.urlproxy.Scheme == "https" {
+			port = "443"
+		} else {
+			port = "80"
+		}
+	}
+	conn, err := tls.Dial("tcp", cli.urlproxy.Hostname()+":"+port, tlsconfig)
 	if err != nil {
 		return conn, errors.New("HTTPS Proxy:" + err.Error())
 	}

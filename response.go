@@ -29,6 +29,9 @@ func (res *response) patch_response(r *bufio.Reader, req *http.Request) (resp *h
 	if string(prefix[:n]) == "HTTP/2 " {
 		// fix HTTP/2 proto
 		resp, error = http.ReadResponse(bufio.NewReader(io.MultiReader(bytes.NewBufferString("HTTP/2.0 "), r)), req)
+	} else if string(prefix[:n]) == "HTTP/3 " {
+		// fix HTTP/3 proto(feature may has this issue)
+		resp, error = http.ReadResponse(bufio.NewReader(io.MultiReader(bytes.NewBufferString("HTTP/3.0 "), r)), req)
 	} else {
 		// other proto
 		resp, error = http.ReadResponse(bufio.NewReader(io.MultiReader(bytes.NewBuffer(prefix[:n]), r)), req)

@@ -141,9 +141,9 @@ https://koala:123456@127.0.0.1:80
 所以为了安全起见，建议自己动手生成CA;当然你觉得也没啥隐私可泄露的，这也无所谓了
 
 ### php免费空间推荐
-- [000webhost](https://www.000webhost.com/) 
-- [heroku](https://www.heroku.com/) 
-- [Vercel](https://vercel.com/) 
+- [000webhost](https://www.000webhost.com/)(我最早用的这个，还不错)
+- [heroku](https://www.heroku.com/)(这个平台，是我目前在用的最多的)
+- [Vercel](https://vercel.com/)(这个平台free plan的php执行时间限制在5s之内，因此下载大文件会出现FUNCTION_INVOCATION_TIMEOUT错误,解决办法只有upgrade plan;不过速度方面是最快的) 
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
