@@ -103,7 +103,7 @@ func (c *config) init_config() {
 	flag.StringVar(&c.Sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
 	flag.StringVar(&c.Fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
 	flag.StringVar(&c.User_agent, "ua", "", "customize User-Agent to php server(default use brower User-Agent)")
-	flag.StringVar(&c.Proxy, "fp", "", "connect php server via Forward Proxy(http://user:password@127.0.0.1:8080,socks5://user:password@127.0.0.1:1080)")
+	flag.StringVar(&c.Proxy, "fp", "", "connect php server via Forward Proxy(https://user:password@domain.com,http://user:password@127.0.0.1:8080,socks5://user:password@127.0.0.1:1080)")
 	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
 	flag.BoolVar(&c.Autoproxy, "a", false, "enable auto proxy")
 	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
