@@ -144,6 +144,8 @@ https://koala:123456@127.0.0.1:80
 - [000webhost](https://www.000webhost.com/)(我最早用的这个，还不错)
 - [heroku](https://www.heroku.com/)(这个平台，是我目前在用的最多的)
 - [Vercel](https://vercel.com/)(这个平台free plan的php执行时间限制在5s之内，因此下载大文件会出现FUNCTION_INVOCATION_TIMEOUT错误,解决办法只有upgrade plan;不过速度方面是最快的) 
+- [euroserver](https://euroserver.es/)(联通欧洲直连,CTZZG推荐，注册太麻烦，我没有测试)
+- [qoddi](https://app.qoddi.com/)(选择美西,CTZZG推荐，速度还行)
 
 ### TODO
 - 增加请求头添加的配置，也许可以用来放到国内外(免费)的php空间，做免流代理
