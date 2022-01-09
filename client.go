@@ -55,6 +55,10 @@ func (cli *client) Post(url, contentType string, body io.Reader) (resp *http.Res
 	//return cli.client.Post(url, contentType, body)
 }
 
+func (cli *client) Dummy_Get(url string) (resp *http.Response, err error) {
+	return cli.client.Get(url)
+}
+
 func (cli *client) Do(req *http.Request) (resp *http.Response, err error) {
 	if req == nil {
 		log.Printf("POST Request == nil")
@@ -135,6 +139,9 @@ func (cli *client) init_client() {
 	cli.client = &http.Client{
 		Transport: cli.tr,
 	}
+	//for cache tcp & dns(not must)
+	res, _ := cli.Dummy_Get(cli.cfg.Fetchserver)
+	res.Body.Close()
 }
 
 func (cli *client) VerifyConnection(cs tls.ConnectionState) error {

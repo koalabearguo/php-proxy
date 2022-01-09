@@ -83,6 +83,12 @@ func (prx *proxy) init_ca() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//prepare gen google cert for cache(not must)
+	_ = prx.signer.SignHost("www.google.com")
+	_ = prx.signer.SignHost("www.youtube.com")
+	_ = prx.signer.SignHost("www.googlevideo.com")
+	_ = prx.signer.SignHost("www.gstatic.com")
+	_ = prx.signer.SignHost("www.ggpht.com")
 }
 
 func (prx *proxy) init_proxy() {
