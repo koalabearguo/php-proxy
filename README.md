@@ -3,6 +3,9 @@
 本项目主要实现的是GoAgent的php代理模式，协议兼容GoAgent php模式；
 本项目主要用于个人学习，研究免费php空间的用途，严禁用于非法用途，后果自负
 
+# 特别提醒
+- server目录下最新的index.php,已经不在兼容goagent php模式
+
 ### 特性以及改进
 - 在连接php server时，https模式支持TLS sni的发送，可以用来穿过CDN，尤其是cloudflare
 - 支持自定义TLS SNI的发送,可以用来欺骗xxx
@@ -17,6 +20,7 @@
 - 支持智能代理模式
 - 支持自定义User-Agent(UA)
 - 支持前置代理功能(目前支持的协议有http,https,socks5)
+- 服务端支持chunked编码代理内容
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
@@ -143,7 +147,6 @@ https://koala:123456@127.0.0.1:80
 ### php免费空间推荐
 - [000webhost](https://www.000webhost.com/)(我最早用的这个，还不错)
 - [heroku](https://www.heroku.com/)(这个平台，是我目前在用的最多的)
-- [Vercel](https://vercel.com/)(这个平台free plan的php执行时间限制在5s之内，因此下载大文件会出现FUNCTION_INVOCATION_TIMEOUT错误,解决办法只有upgrade plan;不过速度方面是最快的) 
 - [euroserver](https://euroserver.es/)(联通欧洲直连,CTZZG推荐，注册太麻烦，我没有测试)
 - [qoddi](https://app.qoddi.com/)(选择美西,CTZZG推荐，速度还行)
 

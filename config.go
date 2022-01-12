@@ -65,7 +65,7 @@ jIxm1tgZheqRxqpv1LwQ4hQ=
 -----END PRIVATE KEY-----`)
 
 //
-const version string = "2.1.3"
+const version string = "2.1.4"
 
 //
 

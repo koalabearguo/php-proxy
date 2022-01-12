@@ -141,7 +141,9 @@ func (cli *client) init_client() {
 	}
 	//for cache tcp & dns(not must)
 	res, _ := cli.Dummy_Get(cli.cfg.Fetchserver)
-	res.Body.Close()
+	if res.Body != nil {
+		res.Body.Close()
+	}
 }
 
 func (cli *client) VerifyConnection(cs tls.ConnectionState) error {
