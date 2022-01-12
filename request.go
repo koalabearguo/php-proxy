@@ -35,7 +35,7 @@ var (
 		"Proxy-Authorization":      true,
 		"Proxy-Connection":         true,
 		"X-Chrome-Variations":      true,
-		"Connection":               true,
+		//"Connection":               true,
 		"Cache-Control":            true,
 	}
 )
