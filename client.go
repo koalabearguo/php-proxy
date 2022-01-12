@@ -141,8 +141,10 @@ func (cli *client) init_client() {
 	}
 	//for cache tcp & dns(not must)
 	res, _ := cli.Dummy_Get(cli.cfg.Fetchserver)
-	if res.Body != nil {
-		res.Body.Close()
+	if res != nil {
+		if res.Body != nil {
+			res.Body.Close()
+		}
 	}
 }
 
