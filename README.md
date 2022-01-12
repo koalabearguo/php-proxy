@@ -3,7 +3,7 @@
 本项目主要实现的是GoAgent的php代理模式，协议兼容GoAgent php模式；
 本项目主要用于个人学习，研究免费php空间的用途，严禁用于非法用途，后果自负
 
-# 特别提醒
+### 特别提示
 - server目录下最新的index.php,已经不在兼容goagent php模式
 
 ### 特性以及改进
@@ -20,7 +20,8 @@
 - 支持智能代理模式
 - 支持自定义User-Agent(UA)
 - 支持前置代理功能(目前支持的协议有http,https,socks5)
-- 服务端支持chunked编码代理内容
+- php服务端支持chunked编码代理内容
+- 服务端支持CloudFlare Workers(index.js在server目录下)
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
