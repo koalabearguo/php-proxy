@@ -1,14 +1,14 @@
 <?php
 
 
-$__version__  = '3.3.0';
+$__version__  = '3.2.6';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
 //$__content_type__ = 'text/html';
 $__timeout__ = 20;
 $__content__ = '';
-$__chunked__= 0;
+
 
 function message_html($title, $banner, $detail) {
     $error = <<<MESSAGE_STRING
@@ -84,46 +84,31 @@ function decode_request($data) {
 
 
 function echo_content($content) {
-    global $__password__, $__content_type__,$__chunked__,$__content__;
-    $chunk="";
-    if($__chunked__==1) {
-    	if(empty($__content__)) {
-    		$chunk=sprintf("%x\r\n%s\r\n", strlen($content), $content);
-	} else {
-    	        $chunk=$content;
-	}
-    } else {
-    	        $chunk=$content;
-    }
-    //
+    global $__password__, $__content_type__;
     if ($__content_type__ == 'image/gif') {
-        $chunk = $chunk ^ str_repeat($__password__[0], strlen($chunk));
+        echo $content ^ str_repeat($__password__[0], strlen($content));
     } else {
-        $chunk = $chunk;
+        echo $content;
     }
-    echo $chunk;
 }
 
 
 function curl_header_function($ch, $header) {
-    global $__content__, $__content_type__,$__chunked__;
+    global $__content__, $__content_type__;
     $pos = strpos($header, ':');
     if ($pos == false) {
         $__content__ .= $header;
     } else {
         $key = join('-', array_map('ucfirst', explode('-', substr($header, 0, $pos))));
-        //if ($key != 'Transfer-Encoding') {
+        if ($key != 'Transfer-Encoding') {
             $__content__ .= $key . substr($header, $pos);
-        //}
+        }
     }
     if (preg_match('@^Content-Type: ?(audio/|image/|video/|application/octet-stream)@i', $header)) {
         $__content_type__ = 'image/x-png';
     }
     if (!trim($header)) {
         header('Content-Type: ' . $__content_type__);
-    }
-    if (preg_match('@^Transfer-Encoding: ?(chunked)@i', $header)) {
-        $__chunked__ = 1;
     }
     return strlen($header);
 }
@@ -171,9 +156,9 @@ function post() {
     if ($body) {
         $headers['Content-Length'] = strval(strlen($body));
     }
-    //if (isset($headers['Connection'])) {
-    //    $headers['Connection'] = 'close';
-    //}
+    if (isset($headers['Connection'])) {
+        $headers['Connection'] = 'close';
+    }
 
     $header_array = array();
     foreach ($headers as $key => $value) {
@@ -234,15 +219,10 @@ function post() {
         $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
         if (!headers_sent()) {
             header('Content-Type: ' . $__content_type__);
-            echo_content($content);
         } else if($errno==CURLE_OPERATION_TIMEOUTED) {
             $content = "";
-            echo_content($content);
-	    $GLOBALS['__chunked__']=0;
         }
-    }
-    if ($GLOBALS['__chunked__']==1){
-        echo_content("");
+        echo_content($content);
     }
     curl_close($ch);
 }
