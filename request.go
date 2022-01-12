@@ -36,7 +36,7 @@ var (
 		"Proxy-Connection":         true,
 		"X-Chrome-Variations":      true,
 		//"Connection":               true,
-		"Cache-Control":            true,
+		"Cache-Control": true,
 	}
 )
 
@@ -117,6 +117,10 @@ func (req *request) parse_request() {
 	if req.http_req.ContentLength > 0 {
 		req.cli_req.ContentLength = int64(len(length)+deflare_header_buf.Len()) + req.http_req.ContentLength
 		req.cli_req.Body = req.MultiReader(bytes.NewReader(length[:]), deflare_header_buf, req.http_req.Body)
+	} else if req.http_req.ContentLength == -1 {
+		req.cli_req.ContentLength = -1
+		req.cli_req.Body = req.MultiReader(bytes.NewReader(length[:]), deflare_header_buf, req.http_req.Body)
+		log.Print("!!!POST data chunked!!!,you may report this to author about how to happen? this feature not support so far.")
 	} else {
 		req.cli_req.ContentLength = int64(len(length) + deflare_header_buf.Len())
 		req.cli_req.Body = req.MultiReader(bytes.NewReader(length[:]), deflare_header_buf)
