@@ -159,7 +159,6 @@ cfEmail.bindAll()
 //
 async function streamTransformBody(response, writable) {
   
-  let reader = response.body.getReader()
   let writer = writable.getWriter()
   //
   let headerstr= 'HTTP/1.1 '+response.status + ' '+response.statusText +'\r\n'
@@ -177,6 +176,14 @@ async function streamTransformBody(response, writable) {
   let uint8array = new TextEncoder("utf-8").encode(headerstr)
 
   await writer.write(uint8array)
+
+  //some response has not body,only has header
+  if(response.body==null) {
+  	await writer.close()
+	return
+  }
+
+  let reader = response.body.getReader()
   //
   while (true) {
     //
