@@ -1,6 +1,6 @@
 'use strict'
 
-var __version__ ='1.0.0'
+var __version__ ='1.0.1'
 var __content_type__='image/gif'
 var __password__='123456'
 var __chunked__ = 0
