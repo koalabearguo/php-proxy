@@ -236,9 +236,13 @@ function post() {
             header('Content-Type: ' . $__content_type__);
             echo_content($content);
         } else if($errno==CURLE_OPERATION_TIMEOUTED) {
-            $content = "";
+	    if($GLOBALS['__chunked__']==1) {
+            	$content = "-1\r\n\r\n";//fake chunked end flag
+	        $GLOBALS['__chunked__']=0;
+	    } else {
+            	$content = "";
+	    }
             echo_content($content);
-	    $GLOBALS['__chunked__']=0;
         }
     }
     if ($GLOBALS['__chunked__']==1){

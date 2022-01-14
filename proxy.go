@@ -351,6 +351,20 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			if err != nil {
 				log.Println(err)
 			}
+
+		} else if strings.Contains(err.Error(), "invalid byte in chunk length") == true {
+			hijacker, ok := rw.(http.Hijacker)
+			if !ok {
+				log.Println("Not Support Hijacking")
+			}
+			conn, _, err := hijacker.Hijack()
+			if err != nil {
+				log.Println(err)
+			}
+			err = conn.Close()
+			if err != nil {
+				log.Println(err)
+			}
 		} else {
 			log.Println(err)
 		}
