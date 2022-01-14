@@ -1,7 +1,7 @@
 # php-proxy
 最近在学习golang，闲来无聊就找个项目把它用golang写了一遍，嗯，golang真香；
 本项目主要实现的是GoAgent的php代理模式，协议兼容GoAgent php模式；
-目前本项目已经支持Cloudflare Wokers(服务端文件server/index.js)
+目前本项目已经支持Cloudflare Wokers(服务端文件server/index.js);
 本项目主要用于个人学习，研究免费php/Cloudflare Wokers空间的用途，严禁用于非法用途，后果自负
 
 ### 特别提示
