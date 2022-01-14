@@ -1,7 +1,7 @@
 <?php
 
 
-$__version__  = '3.3.0';
+$__version__  = '3.3.1';
 $__password__ = '123456';
 $__hostsdeny__ = array(); // $__hostsdeny__ = array('.youtube.com', '.youku.com');
 $__content_type__ = 'image/gif';
@@ -9,6 +9,7 @@ $__content_type__ = 'image/gif';
 $__timeout__ = 20;
 $__content__ = '';
 $__chunked__= 0;
+$__trailer__= 0;
 
 function message_html($title, $banner, $detail) {
     $error = <<<MESSAGE_STRING
@@ -130,12 +131,13 @@ function curl_header_function($ch, $header) {
 
 
 function curl_write_function($ch, $content) {
-    global $__content__;
+    global $__content__,$__chunked__,$__trailer__;
     if ($__content__) {
         // for debug
         // echo_content("HTTP/1.0 200 OK\r\nContent-Type: text/plain\r\n\r\n");
         echo_content($__content__);
         $__content__ = '';
+	$__trailer__ = $__chunked__;
     }
     echo_content($content);
     return strlen($content);
@@ -228,7 +230,7 @@ function post() {
     curl_setopt_array($ch, $curl_opt);
     $ret = curl_exec($ch);
     $errno = curl_errno($ch);
-    if ($GLOBALS['__content__']) {
+    if ($GLOBALS['__content__'] && $GLOBALS['__trailer__']==0 ) {
         echo_content($GLOBALS['__content__']);
     } else if ($errno) {
         $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
@@ -239,12 +241,19 @@ function post() {
 	    if($GLOBALS['__chunked__']==1) {
             	$content = "-1\r\n\r\n";//fake chunked end flag
 	        $GLOBALS['__chunked__']=0;
+	        $GLOBALS['__trailer__']=0;
 	    } else {
             	$content = "";
 	    }
             echo_content($content);
         }
     }
+    //when chunked there may be trailer
+    if ($GLOBALS['__trailer__']==1 && $GLOBALS['__content__']){
+	    $GLOBALS['__chunked__']=0;
+            echo_content("0\r\n".$GLOBALS['__content__']."\r\n");
+    }
+    //normal chunked end
     if ($GLOBALS['__chunked__']==1){
         echo_content("");
     }
