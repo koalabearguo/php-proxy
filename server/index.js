@@ -228,6 +228,9 @@ async function handleRequest(request) {
             if(request.method != 'POST') {
                 return new Response('OK.', {status: 200})
             }
+            if(request.body==null) {
+                return new Response('NULL Post Body.', {status: 200})
+            }
             /** GotoX 代理 API，普通请求 **/
             try {
                 let [fetchOptions, status, err] = [{},0,'']//parseFetch(request, false)

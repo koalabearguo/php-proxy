@@ -16,7 +16,7 @@ type response struct {
 	cfg *config
 }
 
-var ResDeleteHeader = []string{"Upgrade", "Alt-Svc", "Alternate-Protocol", "Expect-CT"}
+var ResDeleteHeader = []string{"Upgrade", "Alt-Svc", "Alternate-Protocol", "Expect-CT", "Report-To", "Nel"}
 
 func (res *response) patch_response(r *bufio.Reader, req *http.Request) (resp *http.Response, error error) {
 	//
