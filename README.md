@@ -23,6 +23,7 @@
 - 支持前置代理功能(目前支持的协议有http,https,socks5)
 - php服务端支持chunked编码代理内容
 - 服务端支持CloudFlare Workers(index.js在server目录下)
+- 支持安装到openwrt
 
 ### 协议分析
 - 简单的来讲就是把客户端请求的数据（头+Body）,打包POST到php server，格式如下：
