@@ -92,12 +92,15 @@ type config struct {
 
 func (c *config) init_config() {
 	//
+	confpath := ""
+	//
 	log.Printf("Php-Proxy version:v%s\n", version)
 	//
 	log.Printf("Go version:%s\n", runtime.Version())
 	//
 	flag.CommandLine.SetOutput(os.Stdout)
 	//
+	flag.StringVar(&confpath, "c", "", "config file path")
 	flag.StringVar(&c.Listen, "l", "127.0.0.1:8081", "Local listen address(HTTP Proxy address)")
 	flag.StringVar(&c.Password, "p", "123456", "php server password")
 	flag.StringVar(&c.Sni, "sni", "", "HTTPS sni extension ServerName(default fetchserver hostname)")
@@ -110,8 +113,8 @@ func (c *config) init_config() {
 	flag.Parse()
 	//
 	//c.writeconfig()
-	if len(os.Args) < 2 {
-		c.loadconfig()
+	if len(os.Args) < 2 || confpath != "" {
+		c.loadconfig(confpath)
 	} else {
 		c.writeconfig()
 	}
@@ -125,17 +128,23 @@ func (c *config) init_config() {
 	log.Printf("php Fetch server:%s\n", c.Fetchserver)
 }
 
-func (c *config) loadconfig() {
+func (c *config) loadconfig(confpath string) {
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.json")
+	fpath := ""
+	if confpath != "" {
+		fpath = confpath
+	} else {
+		fpath = dir + "/php-proxy.json"
+	}
+	raw, err1 := ioutil.ReadFile(fpath)
 	if err1 != nil {
 		//log.Print(err1)
 		return
 	}
-	log.Print("Load config from ./php-proxy.json file")
+	log.Print("Load config from " + fpath)
 	err = json.Unmarshal(raw, c)
 	if err != nil {
 		log.Print(err)
@@ -158,5 +167,5 @@ func (c *config) writeconfig() {
 		log.Print(err)
 		return
 	}
-	log.Print("Write config to ./php-proxy.json file")
+	log.Print("Write config to " + dir + "/php-proxy.json")
 }
