@@ -9,7 +9,7 @@ PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/koalabearguo/php-proxy/tar.gz/v$(PKG_VERSION)?
 PKG_HASH:=203d74a8c4b2dec28ab07e247f14737dd1edf110a0c6f3805d5e3634fc7545f6
 
-PKG_LICENSE:=MIT
+PKG_LICENSE:=GPL
 PKG_LICENSE_FILE:=LICENSE
 PKG_MAINTAINER:=koala <koalabearguo@gmail.com>
 
