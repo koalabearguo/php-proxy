@@ -35,11 +35,17 @@ func (prx *proxy) load_ca() []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.crt")
+	ca_path := ""
+	if prx.cfg.Ca == "" {
+		ca_path = dir + "/php-proxy.crt"
+	} else {
+		ca_path = prx.cfg.Ca
+	}
+	raw, err1 := ioutil.ReadFile(ca_path)
 	if err1 != nil {
 		return nil
 	}
-	//log.Print("Load ca cert from ./php-proxy.crt file")
+	log.Print("Load ca cert from " + ca_path + " file")
 	return raw
 }
 
@@ -48,11 +54,17 @@ func (prx *proxy) load_key() []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	raw, err1 := ioutil.ReadFile(dir + "/php-proxy.key")
+	key_path := ""
+	if prx.cfg.Key == "" {
+		key_path = dir + "/php-proxy.key"
+	} else {
+		key_path = prx.cfg.Key
+	}
+	raw, err1 := ioutil.ReadFile(key_path)
 	if err1 != nil {
 		return nil
 	}
-	//log.Print("Load ca key from ./php-proxy.key file")
+	log.Print("Load ca key from " + key_path + " file")
 	return raw
 }
 
@@ -65,7 +77,7 @@ func (prx *proxy) init_ca() {
 	if cert != nil && key != nil {
 		use_ca = cert
 		use_key = key
-		log.Print("Using external customize CA file:./php-proxy.crt ./php-proxy.key")
+		log.Print("Using external customize CA file")
 
 	} else {
 		use_ca = CaCert

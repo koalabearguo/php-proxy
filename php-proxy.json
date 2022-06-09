@@ -6,5 +6,8 @@
 "debug": false,
 "insecure": false,
 "autoproxy": true,
-"user-agent": ""
+"user-agent": "",
+"proxy":"",
+"ca": "",
+"key": ""
 }

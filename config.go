@@ -88,6 +88,10 @@ type config struct {
 	User_agent string `json:"user-agent"`
 	//parent proxy
 	Proxy string `json:"proxy"`
+	//ca
+	Ca string `json:"ca"`
+	//key
+	Key string `json:"key"`
 }
 
 func (c *config) init_config() {
@@ -107,6 +111,8 @@ func (c *config) init_config() {
 	flag.StringVar(&c.Fetchserver, "s", "https://a.bc.com/php-proxy/index.php", "php fetchserver path(http/https)")
 	flag.StringVar(&c.User_agent, "ua", "", "customize User-Agent to php server(default use brower User-Agent)")
 	flag.StringVar(&c.Proxy, "fp", "", "connect php server via Forward Proxy(https://user:password@domain.com,http://user:password@127.0.0.1:8080,socks5://user:password@127.0.0.1:1080)")
+	flag.StringVar(&c.Ca, "ca", "", "ca file path")
+	flag.StringVar(&c.Key, "key", "", "key file path")
 	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
 	flag.BoolVar(&c.Autoproxy, "a", false, "enable auto proxy")
 	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
@@ -126,6 +132,12 @@ func (c *config) init_config() {
 	}
 	//
 	log.Printf("php Fetch server:%s\n", c.Fetchserver)
+	//
+	if c.Proxy == "" {
+		log.Printf("Forward Proxy not enabled")
+	} else {
+		log.Printf("Forward Proxy enabled:" + c.Proxy)
+	}
 }
 
 func (c *config) loadconfig(confpath string) {
