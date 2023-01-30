@@ -307,6 +307,9 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	if err != nil {
 		log.Println(err)
+		if prx.client.tr3 != nil {
+			prx.client.tr3.Close()
+		}
 		origin := req_op.http_req.Header.Get("Origin")
 		if origin != "" {
 			rw.Header().Add("Access-Control-Allow-Origin", origin)
