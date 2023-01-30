@@ -7,6 +7,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"errors"
+	"github.com/lucas-clemente/quic-go"
+	"github.com/lucas-clemente/quic-go/http3"
 	"io"
 	"log"
 	"net"
@@ -20,7 +22,10 @@ type client struct {
 	//global config
 	cfg *config
 	//http.Transport when connect server
-	tr *http.Transport
+	tr  *http.Transport
+	tr3 *http3.RoundTripper
+	//http3 quic config
+	qconf *quic.Config
 	//tls.Config when connect https server
 	tlsconfig *tls.Config
 	//http.Client used to connect server
@@ -112,40 +117,51 @@ func (cli *client) init_client() {
 			log.Println(err)
 		}
 	}
-	//tr http.client default tr + tlsconfig
-	cli.tr = &http.Transport{
-		//Dial: cli.Dial,
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).DialContext,
-		ForceAttemptHTTP2:     true,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-		TLSClientConfig:       cli.tlsconfig,
-	}
-	if cli.urlproxy != nil {
-		if cli.urlproxy.Scheme == "https" {
-			//for connect https proxy server
-			cli.tr.DialTLS = cli.DialTLS
+	if cli.cfg.Http3 == false {
+		//tr http.client default tr + tlsconfig
+		cli.tr = &http.Transport{
+			//Dial: cli.Dial,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig:       cli.tlsconfig,
 		}
-		cli.tr.Proxy = http.ProxyURL(cli.urlproxy)
+		if cli.urlproxy != nil {
+			if cli.urlproxy.Scheme == "https" {
+				//for connect https proxy server
+				cli.tr.DialTLS = cli.DialTLS
+			}
+			cli.tr.Proxy = http.ProxyURL(cli.urlproxy)
+		} else {
+			cli.tr.Proxy = http.ProxyFromEnvironment
+		}
 	} else {
-		cli.tr.Proxy = http.ProxyFromEnvironment
+		//qconf.KeepAlive = true
+		//qconf.MaxIdleTimeout = cli.tr.IdleConnTimeout
+		cli.qconf = &quic.Config{}
+		cli.tr3 = &http3.RoundTripper{TLSClientConfig: cli.tlsconfig, QuicConfig: cli.qconf}
 	}
 	//
-	cli.client = &http.Client{
-		Transport: cli.tr,
+
+	cli.client = &http.Client{}
+	if cli.cfg.Http3 == true {
+		cli.client.Transport = cli.tr3
+	} else {
+		cli.client.Transport = cli.tr
 	}
 	//for cache tcp & dns(not must)
-	res, _ := cli.Dummy_Get(cli.cfg.Fetchserver)
-	if res != nil {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-	}
+	//res, _ := cli.Dummy_Get(cli.cfg.Fetchserver)
+	//if res != nil {
+	//	if res.Body != nil {
+	//		res.Body.Close()
+	//	}
+	//}
 }
 
 func (cli *client) VerifyConnection(cs tls.ConnectionState) error {

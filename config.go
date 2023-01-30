@@ -78,6 +78,8 @@ type config struct {
 	Sni string `json:"sni"`
 	//local listen address
 	Listen string `json:"listen"`
+        //enable http3
+	Http3 bool `json:"http3"`
 	//debug enable
 	Debug bool `json:"debug"`
 	//insecure connect to php server
@@ -114,6 +116,7 @@ func (c *config) init_config() {
 	flag.StringVar(&c.Ca, "ca", "", "ca file path")
 	flag.StringVar(&c.Key, "key", "", "key file path")
 	flag.BoolVar(&c.Debug, "d", false, "enable debug mode for debug")
+	flag.BoolVar(&c.Http3, "h3", false, "enable http3 client mode")
 	flag.BoolVar(&c.Autoproxy, "a", false, "enable auto proxy")
 	flag.BoolVar(&c.Insecure, "k", false, "insecure connect to php server(ignore certs verify/middle attack)")
 	flag.Parse()
@@ -129,6 +132,11 @@ func (c *config) init_config() {
 		log.Printf("Autoproxy enabled")
 	} else {
 		log.Printf("Autoproxy not enabled")
+	}
+	if c.Http3 {
+		log.Printf("Http3 enabled")
+	} else {
+		log.Printf("Http3 not enabled")
 	}
 	//
 	log.Printf("php Fetch server:%s\n", c.Fetchserver)
