@@ -131,6 +131,8 @@ func (cli *client) init_client() {
 			TLSHandshakeTimeout:   10 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
 			TLSClientConfig:       cli.tlsconfig,
+			WriteBufferSize:       4096 * 32,
+			ReadBufferSize:        4096 * 32,
 		}
 		if cli.urlproxy != nil {
 			if cli.urlproxy.Scheme == "https" {
@@ -142,9 +144,13 @@ func (cli *client) init_client() {
 			cli.tr.Proxy = http.ProxyFromEnvironment
 		}
 	} else {
-		//qconf.KeepAlive = true
-		//qconf.MaxIdleTimeout = cli.tr.IdleConnTimeout
-		cli.qconf = &quic.Config{}
+		cli.qconf = &quic.Config{
+			MaxIdleTimeout:                 90 * time.Second,
+			HandshakeIdleTimeout:           10 * time.Second,
+			KeepAlivePeriod:                30 * time.Second,
+			InitialStreamReceiveWindow:     512 * 1024 * 10,
+			InitialConnectionReceiveWindow: 512 * 1024 * 10,
+		}
 		cli.tr3 = &http3.RoundTripper{TLSClientConfig: cli.tlsconfig, QuicConfig: cli.qconf}
 	}
 	//

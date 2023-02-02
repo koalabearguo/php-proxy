@@ -78,7 +78,7 @@ type config struct {
 	Sni string `json:"sni"`
 	//local listen address
 	Listen string `json:"listen"`
-        //enable http3
+	//enable http3
 	Http3 bool `json:"http3"`
 	//debug enable
 	Debug bool `json:"debug"`
