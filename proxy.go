@@ -17,13 +17,19 @@ import (
 	"time"
 )
 
+var mux sync.Mutex
+
+const num_connection int = 5
+
+var conn_index int = 0
+
 type proxy struct {
 	//global config
 	cfg *config
 	//prepare static buf
 	bufpool sync.Pool
 	//php client
-	client *client
+	client [num_connection]*client
 	//ca sign ssl cert for middle intercept
 	signer *CaSigner
 	//ca root cert info for middle attack check
@@ -111,9 +117,11 @@ func (prx *proxy) init_proxy() {
 	log.Println("HTTP Proxy Listening on " + prx.cfg.Listen)
 
 	//connect php server config
-	prx.client = &client{cfg: prx.cfg}
-	prx.client.cert = prx.cert
-	prx.client.init_client()
+	for i := 0; i < num_connection; i++ {
+		prx.client[i] = &client{cfg: prx.cfg}
+		prx.client[i].cert = prx.cert
+		prx.client[i].init_client()
+	}
 	//
 	prx.bufpool = sync.Pool{
 		New: func() interface{} {
@@ -300,15 +308,21 @@ func (prx *proxy) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	//
 	//connect php server
 	start = time.Now()
-	Res, err := prx.client.Do(req_op.cli_req)
+	var conn_index_tmp int
+	mux.Lock()
+	conn_index_tmp = conn_index
+	conn_index++
+	conn_index = conn_index % num_connection
+	mux.Unlock()
+	Res, err := prx.client[conn_index_tmp].Do(req_op.cli_req)
 	if prx.cfg.Debug == true {
 		elapsed := time.Since(start)
 		log.Println("HTTP POST Time:", elapsed)
 	}
 	if err != nil {
 		log.Println(err)
-		if prx.client.tr3 != nil {
-			prx.client.tr3.Close()
+		if prx.client[conn_index_tmp].tr3 != nil {
+			prx.client[conn_index_tmp].tr3.Close()
 		}
 		origin := req_op.http_req.Header.Get("Origin")
 		if origin != "" {
