@@ -141,6 +141,18 @@ func (prx *proxy) IOCopy(dst io.Writer, src io.Reader) (written int64, err error
 	prx.bufpool.Put(buf)
 	return written, err
 }
+
+var hopHeaders = []string{
+	"Connection",
+	"Keep-Alive",
+	"Proxy-Authenticate",
+	"Proxy-Authorization",
+	"Te",
+	"Trailers",
+	"Transfer-Encoding",
+	"Upgrade",
+}
+
 func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 	hijacker, ok := rw.(http.Hijacker)
 	if !ok {
@@ -174,8 +186,9 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	//
-	req.Header.Del("Proxy-Authorization")
-	req.Header.Del("Proxy-Connection")
+	for _, h := range hopHeaders {
+		req.Header.Del(h)
+	}
 	//
 	Req := req
 	//http proxy keep alive
@@ -197,12 +210,14 @@ func (prx *proxy) ServePROXY(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 		//
-		req.Header.Del("Proxy-Authorization")
-		req.Header.Del("Proxy-Connection")
+		for _, h := range hopHeaders {
+			req.Header.Del(h)
+		}
 		//
 	}
 
 }
+
 func (prx *proxy) isblocked(host string) bool {
 	hostname := stripPort(host)
 	hostnamelth := len(hostname)
